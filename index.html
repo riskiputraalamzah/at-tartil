@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Materi At-Tartil</title>
+    <link rel="shortcut icon" href="img/logo.png" type="image/x-icon" />
+    <meta name="description" content="Materi At-Tartil" />
+    <meta name="author" content="Riski Putra Alamzah" />
+    <meta name="keywords" content="At-Tartil, Al-Qur'an, Materi, Belajar" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Materi At-Tartil" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="msapplication-TileImage" content="img/logo.png" />
+    <meta name="msapplication-config" content="img/browserconfig.xml" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@RiskiPutraAlamzah" />
+    <meta name="twitter:title" content="Materi At-Tartil" />
+    <meta name="twitter:description" content="Materi At-Tartil" />
+    <meta name="twitter:image" content="img/logo.png" />
+    <meta property="og:title" content="Materi At-Tartil" />
+    <meta property="og:description" content="Materi At-Tartil" />
+    <meta property="og:image" content="img/logo.png" />
+    <meta property="og:url" content="https://tartil.riskiputraalamzah.my.id" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Materi At-Tartil" />
+    <meta property="og:locale" content="id_ID" />
+    <
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/css/glightbox.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="text-center mb-5">
+        <div
+          class="d-flex flex-md-row flex-column align-items-center justify-content-center"
+        >
+          <img
+            src="img/logo.png"
+            alt="Logo"
+            class="rounded-circle me-2"
+            width="150"
+            height="150"
+          />
+          <div>
+            <h1 class="display-5 m-0 fw-bold text-light">Materi At-Tartil</h1>
+            <p class="lead m-0">Pilih Tartil yang ingin dipelajari</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center g-5 px-3" id="tartilCards"></div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="tartilModal"
+      tabindex="-1"
+      aria-hidden="true"
+      aria-labelledby="tartilNum"
+      data-bs-theme="dark"
+    >
+      <div class="modal-dialog modal-fullscreen" role="document">
+        <div class="modal-content bg-glass">
+          <div class="modal-header">
+            <h5 class="modal-title text-white">
+              At-Tartil <span id="tartilNum"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center position-relative">
+              <img
+                id="currentImage"
+                class="img-fluid rounded shadow"
+                alt="Halaman At-Tartil"
+              />
+            </div>
+            <div class="mt-3 text-center">
+              <label for="pageSelector">Pilih Halaman:</label>
+              <select
+                id="pageSelector"
+                class="form-select d-inline-block w-auto"
+              ></select>
+            </div>
+            <div class="mt-3 text-center">
+              <button id="prevPage" class="btn btn-secondary me-2">
+                Sebelumnya
+              </button>
+              <button id="nextPage" class="btn me-2 btn-secondary">
+                Berikutnya
+              </button>
+              <button
+                id="fullscreenToggle"
+                class="btn btn-secondary"
+                title="Toggle Fullscreen"
+              >
+                Fullscreen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer
+      class="text-center py-3 mt-5"
+      style="border-top: 2px solid rgba(255, 255, 255, 0.5)"
+    >
+      <p class="mb-0">
+        &copy; <span id="dynamicYear"></span> - Created with ❤️ By
+        <a
+          href="https://riskiputraalamzah.my.id"
+          target="_blank"
+          style="color: #ffffff; text-decoration: underline"
+          >Riski Putra Alamzah</a
+        >
+      </p>
+    </footer>
+
+    <!-- Skrip -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/js/glightbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      const startYear = 2025; // Tahun dibuat
+      const currentYear = new Date().getFullYear();
+      const yearText =
+        startYear === currentYear
+          ? `${startYear}`
+          : `${startYear} - ${currentYear}`;
+      document.getElementById("dynamicYear").textContent = yearText;
+    </script>
+  </body>
+</html>

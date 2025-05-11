@@ -1,0 +1,140 @@
+body {
+  /* background: linear-gradient(135deg, #a8e063, #56ab2f); */
+  background-image: url(../img/bg5.png);
+  background-position: top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  color: #f8f9fa; /* Adjusted to a soft white for better readability */
+  font-family: "Arial", sans-serif;
+  position: relative;
+  /* overflow: hidden; */
+}
+
+/* body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("https://www.transparenttextures.com/patterns/arches.png");
+  opacity: 0.2;
+  z-index: 0;
+} */
+
+/* body::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  z-index: 0;
+} */
+
+.card-glass {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.card-glass:hover {
+  transform: scale(1.05);
+}
+
+.bg-glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+}
+
+.flipbook-container {
+  width: 100%;
+  height: 500px;
+  margin: auto;
+}
+
+.page img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.skeleton {
+  background-color: #e0e0e0;
+  height: 100%;
+  width: 100%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.flipbook-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  min-height: 520px;
+  padding: 10px;
+}
+
+.page img {
+  width: 100%;
+  height: auto;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.skeleton {
+  background: #eee;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading-overlay .spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+#currentImage {
+  max-width: 80%;
+  transition: opacity 0.5s ease-in-out;
+  height: 65vh;
+}
+
+#currentImage.hidden {
+  opacity: 0;
+}
