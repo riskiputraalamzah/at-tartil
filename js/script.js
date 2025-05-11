@@ -12,41 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPage = 0; // Start with the cover page
   let currentTartil = 1;
 
-  // Generate Tartil cards dynamically
-  for (let i = 1; i <= 6; i++) {
-    const col = document.createElement("div");
-    col.className = "col-6 col-md-4";
-    const card = document.createElement("div");
-    card.className = "card card-glass text-center ";
-    card.setAttribute("data-tartil", i);
-    card.setAttribute("data-bs-toggle", "modal");
-    card.setAttribute("data-bs-target", "#tartilModal");
-    card.style.cursor = "pointer";
-
-    const img = document.createElement("img");
-    img.src = `img/tartil${i}/cover.png`;
-    img.className = "img-fluid";
-    img.alt = `Cover Tartil ${i}`;
-    img.style.width = "100%";
-    img.style.height = "auto";
-    img.style.objectFit = "cover";
-
-    // const title = document.createElement("h5");
-    // title.className = "card-title";
-    // title.textContent = `At-Tartil ${i}`;
-
-    // const button = document.createElement("button");
-    // button.className = "btn btn-success mt-3";
-    // button.setAttribute("data-bs-toggle", "modal");
-    // button.setAttribute("data-bs-target", "#tartilModal");
-    // button.textContent = "Lihat Halaman";
-
-    // card.appendChild(title);
-    card.appendChild(img);
-    // card.appendChild(button);
-    col.appendChild(card);
-    tartilCards.appendChild(col);
-  }
+  // Removed the loop for dynamically generating Tartil cards
+  // The cards are now statically defined in the HTML file
 
   // Modal event listener
   modal.addEventListener("show.bs.modal", (event) => {
@@ -74,8 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
     pageSelector.appendChild(option);
   }
 
-  // Function to update the displayed image
+  // Function to update the displayed image with loading effect
   const updateImage = () => {
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.className = "loading-overlay";
+    loadingOverlay.innerHTML =
+      '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading...</span></div>';
+    currentImage.parentElement.appendChild(loadingOverlay);
+
     currentImage.classList.add("hidden");
     setTimeout(() => {
       const pagePath = currentPage === 0 ? "cover" : currentPage;
@@ -83,7 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
       currentImage.alt = `Halaman ${
         currentPage === 0 ? "Cover" : currentPage
       } dari Tartil ${currentTartil}`;
-      currentImage.classList.remove("hidden");
+      currentImage.onload = () => {
+        currentImage.classList.remove("hidden");
+        loadingOverlay.remove();
+      };
     }, 500);
   };
 
