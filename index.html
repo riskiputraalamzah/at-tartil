@@ -3,12 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="preload" href="img/logo.png" as="image" />
-    <link rel="preload" href="img/tartil1/cover.png" as="image" />
-    <link rel="preload" href="img/tartil2/cover.png" as="image" />
-    <link rel="preload" href="img/tartil3/cover.png" as="image" />
-    <link rel="preload" href="img/tartil4/cover.png" as="image" />
-    <link rel="preload" href="img/tartil5/cover.png" as="image" />
-    <link rel="preload" href="img/tartil6/cover.png" as="image" />
+    <link rel="preload" href="img/bg5.png" as="image" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Materi At-Tartil</title>
     <link rel="shortcut icon" href="img/logo.png" type="image/x-icon" />
@@ -53,9 +49,30 @@
       href="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/css/glightbox.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.js"></script>
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body class="bg-light">
+  <body class="bg-light overflow-hidden">
+    <div id="loadingOverlay">
+      <div class="text-center">
+        <img
+          src="img/logo.png"
+          alt="Logo"
+          width="100"
+          height="100"
+          class="mb-3"
+        />
+        <div class="spinner-grow text-light" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-light mt-2">Loading</p>
+      </div>
+    </div>
+
     <div class="container py-5">
       <div class="text-center mb-5">
         <div
@@ -75,7 +92,7 @@
         </div>
       </div>
 
-      <div class="row justify-content-center g-5 px-3" id="tartilCards">
+      <div class="row justify-content-center g-4 px-3" id="tartilCards">
         <div class="col-6 col-md-4">
           <div
             class="card card-glass text-center"
@@ -84,13 +101,14 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <img
-              src="img/tartil1/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 1"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil1/cover.png" class="progressive replace">
+              <img
+                src="img/tartil1/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 1"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
         <div class="col-6 col-md-4">
@@ -102,13 +120,14 @@
             style="cursor: pointer"
             loading=""
           >
-            <img
-              src="img/tartil2/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 2"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil2/cover.png" class="progressive replace">
+              <img
+                src="img/tartil2/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 2"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
         <div class="col-6 col-md-4">
@@ -119,13 +138,14 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <img
-              src="img/tartil3/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 3"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil3/cover.png" class="progressive replace">
+              <img
+                src="img/tartil3/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 3"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
         <div class="col-6 col-md-4">
@@ -136,13 +156,14 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <img
-              src="img/tartil4/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 4"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil4/cover.png" class="progressive replace">
+              <img
+                src="img/tartil4/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 4"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
         <div class="col-6 col-md-4">
@@ -153,13 +174,14 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <img
-              src="img/tartil5/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 5"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil5/cover.png" class="progressive replace">
+              <img
+                src="img/tartil5/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 5"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
         <div class="col-6 col-md-4">
@@ -170,13 +192,14 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <img
-              src="img/tartil6/cover.png"
-              class="img-fluid"
-              alt="Cover Tartil 6"
-              style="width: 100%; height: auto; object-fit: cover"
-              loading="eager"
-            />
+            <a href="img/tartil6/cover.png" class="progressive replace">
+              <img
+                src="img/tartil6/cover.png"
+                class="img-fluid preview"
+                alt="Cover Tartil 6"
+                style="width: 100%; height: auto; object-fit: cover"
+              />
+            </a>
           </div>
         </div>
       </div>
@@ -258,14 +281,5 @@
     <script src="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/js/glightbox.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
     <script src="js/script.js"></script>
-    <script>
-      const startYear = 2025; // Tahun dibuat
-      const currentYear = new Date().getFullYear();
-      const yearText =
-        startYear === currentYear
-          ? `${startYear}`
-          : `${startYear} - ${currentYear}`;
-      document.getElementById("dynamicYear").textContent = yearText;
-    </script>
   </body>
 </html>

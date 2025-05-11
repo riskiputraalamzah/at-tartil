@@ -101,3 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// Dynamic copyright year
+const startYear = 2025; // Tahun dibuat
+const currentYear = new Date().getFullYear();
+const yearText =
+  startYear === currentYear ? `${startYear}` : `${startYear} - ${currentYear}`;
+document.getElementById("dynamicYear").textContent = yearText;
+
+// Hide loading overlay after page load with fade-out effect
+window.addEventListener("load", () => {
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  setTimeout(() => {
+    document.body.classList.remove("overflow-hidden"); // Remove overflow hidden
+    loadingOverlay.classList.add("hidden"); // Add hidden class
+    // to trigger fade-out
+    setTimeout(() => {
+      loadingOverlay.style.display = "none"; // Ensure it's
+      // removed after fade-out
+    }, 500); // Match the CSS transition duration
+  }, 500); // Delay before starting fade-out
+});
