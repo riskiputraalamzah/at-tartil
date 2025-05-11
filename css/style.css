@@ -139,6 +139,7 @@ body footer {
   max-width: 80%;
   transition: opacity 0.5s ease-in-out;
   height: 65vh;
+  object-fit: contain;
 }
 
 #currentImage.hidden {
