@@ -4,6 +4,7 @@ body {
   background-position: top;
   background-repeat: no-repeat;
   background-attachment: fixed;
+
   background-size: cover;
   color: #f8f9fa; /* Adjusted to a soft white for better readability */
   font-family: "Arial", sans-serif;
@@ -18,7 +19,7 @@ body::before {
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.2) 0%,
-    rgba(0, 0, 0, 0.7) 100%
+    rgba(0, 0, 0, 0.5) 100%
   );
   /* opacity: 0.2; */
   z-index: 1;
