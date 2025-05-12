@@ -1,0 +1,21 @@
+{
+  "name": "E-Kitab At-Tartil",
+  "short_name": "At-Tartil",
+  "description": "E-Kitab At-Tartil Jilid 1-6 Lengkap",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

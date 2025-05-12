@@ -428,6 +428,14 @@ document.addEventListener("DOMContentLoaded", () => {
       authSubmit.click(); // Trigger the same logic as the 'authSubmit' button
     });
   }
+
+  // Ensure lazy loading is applied dynamically if needed
+  const images = document.querySelectorAll("img");
+  images.forEach((img) => {
+    if (!img.hasAttribute("loading")) {
+      img.setAttribute("loading", "lazy");
+    }
+  });
 });
 
 // Ensure updateFeedbackItemStyles is defined globally

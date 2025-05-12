@@ -4,6 +4,7 @@ body {
   background-position: top;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  transition: background 1s linear;
 
   background-size: cover;
   color: #f8f9fa; /* Adjusted to a soft white for better readability */
@@ -253,4 +254,11 @@ textarea.form-control {
 
 textarea.form-control:focus {
   outline: none;
+}
+
+/* Added styles for WebP fallback */
+@supports not (background-image: url("img/bg5.webp")) {
+  body {
+    background-image: url("img/bg5.png");
+  }
 }
