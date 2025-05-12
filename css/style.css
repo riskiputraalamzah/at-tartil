@@ -1,3 +1,8 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body {
   /* background: linear-gradient(135deg, #a8e063, #56ab2f); */
   background-image: url(../img/bg5.png);
@@ -121,10 +126,7 @@ body footer {
 
 .loading-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   /* background: rgba(255, 255, 255, 0.8); */
   display: flex;
   justify-content: center;
@@ -149,15 +151,17 @@ body footer {
 }
 
 #loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh; /* Ensure full viewport height */
+  box-sizing: border-box; /* Include padding and border in height */
   background: #56ab2f; /* Full green background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 9999;
   opacity: 1;
   transition: opacity 0.5s ease; /* Fade-out transition */
@@ -171,7 +175,10 @@ body footer {
 #loadingOverlay .text-center {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  height: 100%;
+  text-align: center; /* Ensure text is centered */
 }
 
 #loadingOverlay img {
