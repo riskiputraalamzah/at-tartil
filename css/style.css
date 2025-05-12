@@ -5,7 +5,7 @@
 }
 body {
   /* background: linear-gradient(135deg, #a8e063, #56ab2f); */
-  background-image: url(../img/bg5.png);
+  background-image: url(../img/bg6.png);
   background-position: top;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -19,7 +19,7 @@ body {
 }
 
 body::before {
-  content: "";
+  /* content: ""; */
   position: absolute;
   inset: 0;
   background: linear-gradient(
