@@ -167,10 +167,11 @@ document.addEventListener("DOMContentLoaded", () => {
         loadingProgress.textContent = "100%";
         hideLoadingOverlay();
       } else {
-        // Otherwise, increment progress and continue updating
-        progress = Math.min(progress + 10, 100);
+        // Otherwise, increment progress dynamically and continue updating
+        const increment = Math.floor(Math.random() * 5) + 1; // Random increment between 1 and 5
+        progress = Math.min(progress + increment, 99); // Cap progress at 99%
         loadingProgress.textContent = `${progress}%`;
-        setTimeout(updateProgress, 300);
+        setTimeout(updateProgress, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
       }
     };
 
