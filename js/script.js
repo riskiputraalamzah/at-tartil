@@ -7,6 +7,9 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  updateDoc,
+  doc,
+  writeBatch,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -248,6 +251,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     adminFeedbackList.innerHTML = "";
 
+    // Update feedback item button styles based on read status
+    const updateFeedbackItemStyles = (feedbackItem, isRead) => {
+      const button = feedbackItem.querySelector(".mark-as-read");
+      if (isRead) {
+        button.textContent = "Sudah Dibaca";
+        button.classList.remove("btn-danger");
+        button.classList.add("btn-success");
+      } else {
+        button.textContent = "Belum Dibaca";
+        button.classList.remove("btn-success");
+        button.classList.add("btn-danger");
+      }
+    };
+
+    // Update feedback list rendering logic
     snapshot.forEach((doc) => {
       const data = doc.data();
       const time = data.timestamp?.toDate
@@ -260,9 +278,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <div>
           <strong>${time}</strong>
           <p>${data.message}</p>
+          <button class="btn mark-as-read" data-id="${doc.id}"></button>
         </div>
       `;
 
+      updateFeedbackItemStyles(feedbackItem, data.read);
       adminFeedbackList.appendChild(feedbackItem);
     });
 
@@ -278,4 +298,121 @@ document.addEventListener("DOMContentLoaded", () => {
   triggerAuthModal.addEventListener("dblclick", () => {
     authModal.show();
   });
+
+  // Function to update unread feedback count
+  const updateUnreadFeedbackCount = async () => {
+    const q = query(collection(db, "at-tartil"), orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(q);
+
+    let unreadCount = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (!data.read) {
+        unreadCount++;
+      }
+    });
+
+    const unreadFeedbackCount = document.getElementById("unreadFeedbackCount");
+    if (unreadFeedbackCount) {
+      unreadFeedbackCount.textContent = `Kritik & Saran belum terbaca: ${unreadCount}`;
+    }
+  };
+
+  // Call the function when the auth modal is shown
+  const authModalElement = document.getElementById("authModal");
+  if (authModalElement) {
+    authModalElement.addEventListener(
+      "show.bs.modal",
+      updateUnreadFeedbackCount
+    );
+  }
+
+  // Mark feedback as read
+  adminFeedbackList.addEventListener("click", async (event) => {
+    if (event.target.classList.contains("mark-as-read")) {
+      const feedbackId = event.target.dataset.id;
+      const feedbackRef = doc(db, "at-tartil", feedbackId);
+
+      try {
+        await updateDoc(feedbackRef, { read: true });
+        const feedbackItem = event.target.closest(".list-group-item");
+        updateFeedbackItemStyles(feedbackItem, true);
+        updateUnreadFeedbackCount();
+      } catch (error) {
+        console.error("Error updating feedback: ", error);
+      }
+    }
+  });
+
+  // Mark all feedback as read
+  const markAllAsReadButton = document.createElement("button");
+  markAllAsReadButton.textContent = "Tandai Semua Sudah Dibaca";
+  markAllAsReadButton.className = "btn btn-primary mb-3";
+  markAllAsReadButton.addEventListener("click", async () => {
+    const q = query(collection(db, "at-tartil"));
+    const snapshot = await getDocs(q);
+
+    const batch = writeBatch(db);
+    snapshot.forEach((doc) => {
+      const feedbackRef = doc.ref;
+      batch.update(feedbackRef, { read: true });
+    });
+
+    try {
+      await batch.commit();
+      Swal.fire({
+        icon: "success",
+        title: "Semua kritik & saran telah ditandai sebagai sudah dibaca!",
+      });
+      updateUnreadFeedbackCount();
+
+      // Update UI for all feedback items
+      snapshot.forEach((doc) => {
+        const feedbackItem = document
+          .querySelector(`[data-id='${doc.id}']`)
+          .closest(".list-group-item");
+        if (feedbackItem) {
+          updateFeedbackItemStyles(feedbackItem, true);
+        }
+      });
+    } catch (error) {
+      console.error("Error marking all feedback as read: ", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal menandai semua sebagai sudah dibaca",
+        text: "Silakan coba lagi nanti.",
+      });
+    }
+  });
+
+  // Append the button to the feedback admin modal
+  const feedbackAdminModalBody = document.querySelector(
+    "#feedbackAdminModal .modal-body"
+  );
+  if (feedbackAdminModalBody) {
+    feedbackAdminModalBody.insertBefore(markAllAsReadButton, adminFeedbackList);
+  }
+
+  // Ensure the form submission in the admin modal triggers the same logic as the 'authSubmit' button
+  const authForm = document.querySelector("#authModal form");
+  if (authForm) {
+    authForm.addEventListener("submit", (event) => {
+      event.preventDefault(); // Prevent default form submission
+      authSubmit.click(); // Trigger the same logic as the 'authSubmit' button
+    });
+  }
 });
+
+// Ensure updateFeedbackItemStyles is defined globally
+const updateFeedbackItemStyles = (feedbackItem, isRead) => {
+  const button = feedbackItem.querySelector(".mark-as-read");
+  if (isRead) {
+    button.textContent = "Sudah Dibaca";
+    button.classList.remove("btn-danger");
+    button.classList.add("btn-success");
+  } else {
+    button.textContent = "Belum Dibaca";
+    button.classList.remove("btn-success");
+    button.classList.add("btn-danger");
+  }
+};

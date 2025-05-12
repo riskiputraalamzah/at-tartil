@@ -320,15 +320,24 @@
             ></button>
           </div>
           <div class="modal-body">
-            <input
-              type="password"
-              id="adminKey"
-              class="form-control"
-              placeholder="Masukkan Key Admin"
-            />
+            <form>
+              <input
+                type="password"
+                id="adminKey"
+                class="form-control"
+                placeholder="Masukkan Key Admin"
+              />
+            </form>
+            <div class="mt-3">
+              <p id="unreadFeedbackCount" class="text-danger">
+                Kritik & Saran belum terbaca: 0
+              </p>
+            </div>
           </div>
           <div class="modal-footer">
-            <button id="authSubmit" class="btn btn-primary">Submit</button>
+            <button type="button" id="authSubmit" class="btn btn-primary">
+              Submit
+            </button>
           </div>
         </div>
       </div>
