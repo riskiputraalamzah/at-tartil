@@ -158,6 +158,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500); // Delay before starting fade-out
   });
 
+  // Improved logic to ensure loading overlay hides only after full load
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const loadingProgress = document.getElementById("loadingProgress");
+
+  // Check if the website is loading from cache or requires full loading
+  const isCached =
+    performance.getEntriesByType("navigation")[0].type === "back_forward" ||
+    performance.getEntriesByType("navigation")[0].transferSize === 0;
+
+  if (isCached) {
+    // Hide the loading overlay immediately if cached
+    loadingOverlay.classList.add("hidden");
+  } else {
+    // Show the loading overlay and update progress dynamically
+    let progress = 0;
+    const updateProgress = () => {
+      progress += 10; // Simulate loading progress
+      loadingProgress.textContent = `${progress}%`;
+
+      if (progress >= 100) {
+        loadingOverlay.classList.add("hidden"); // Hide the loading overlay
+      } else {
+        setTimeout(updateProgress, 300); // Continue updating progress
+      }
+    };
+
+    // Ensure all resources are fully loaded before hiding the overlay
+    window.addEventListener("load", () => {
+      progress = 100;
+      loadingProgress.textContent = `${progress}%`;
+      loadingOverlay.classList.add("hidden");
+    });
+
+    updateProgress();
+  }
+
   const floatingIcon = document.getElementById("floatingIcon");
   const feedbackDrawer = document.getElementById("feedbackDrawer");
   const closeDrawer = document.getElementById("closeDrawer");
