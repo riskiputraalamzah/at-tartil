@@ -144,54 +144,44 @@ document.addEventListener("DOMContentLoaded", () => {
       : `${startYear} - ${currentYear}`;
   document.getElementById("dynamicYear").textContent = yearText;
 
-  // Hide loading overlay after page load with fade-out effect
-  window.addEventListener("load", () => {
-    const loadingOverlay = document.getElementById("loadingOverlay");
-    setTimeout(() => {
-      document.body.classList.remove("overflow-hidden"); // Remove overflow hidden
-      loadingOverlay.classList.add("hidden"); // Add hidden class
-      // to trigger fade-out
-      setTimeout(() => {
-        loadingOverlay.style.display = "none"; // Ensure it's
-        // removed after fade-out
-      }, 500); // Match the CSS transition duration
-    }, 500); // Delay before starting fade-out
-  });
-
   // Improved logic to ensure loading overlay hides only after full load
   const loadingOverlay = document.getElementById("loadingOverlay");
   const loadingProgress = document.getElementById("loadingProgress");
 
-  // Check if the website is loading from cache or requires full loading
-  const isCached =
-    performance.getEntriesByType("navigation")[0].type === "back_forward" ||
-    performance.getEntriesByType("navigation")[0].transferSize === 0;
-
-  if (isCached) {
-    // Hide the loading overlay immediately if cached
+  // Function to hide the loading overlay
+  const hideLoadingOverlay = () => {
     loadingOverlay.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  };
+
+  // Check if the website is already fully loaded
+  if (document.readyState === "complete") {
+    loadingProgress.textContent = "100%";
+    hideLoadingOverlay();
   } else {
     // Show the loading overlay and update progress dynamically
     let progress = 0;
     const updateProgress = () => {
-      progress += 10; // Simulate loading progress
-      loadingProgress.textContent = `${progress}%`;
-
-      if (progress >= 100) {
-        loadingOverlay.classList.add("hidden"); // Hide the loading overlay
+      if (document.readyState === "complete") {
+        // If fully loaded, set progress to 100% and hide the overlay
+        loadingProgress.textContent = "100%";
+        hideLoadingOverlay();
       } else {
-        setTimeout(updateProgress, 300); // Continue updating progress
+        // Otherwise, increment progress and continue updating
+        progress = Math.min(progress + 10, 100);
+        loadingProgress.textContent = `${progress}%`;
+        setTimeout(updateProgress, 300);
       }
     };
 
-    // Ensure all resources are fully loaded before hiding the overlay
-    window.addEventListener("load", () => {
-      progress = 100;
-      loadingProgress.textContent = `${progress}%`;
-      loadingOverlay.classList.add("hidden");
-    });
-
+    // Start updating progress
     updateProgress();
+
+    // Ensure overlay hides when the load event fires
+    window.addEventListener("load", () => {
+      loadingProgress.textContent = "100%";
+      hideLoadingOverlay();
+    });
   }
 
   const floatingIcon = document.getElementById("floatingIcon");
