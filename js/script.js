@@ -1,3 +1,14 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded and parsed");
 
@@ -11,9 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentPage = 0; // Start with the cover page
   let currentTartil = 1;
+  let isLoading = false; // Prevent spamming navigation buttons
 
-  // Removed the loop for dynamically generating Tartil cards
-  // The cards are now statically defined in the HTML file
+  // Lazy load progressive images for Tartil cards
+  const progressiveCards = document.querySelectorAll(".progressive.replace");
+  progressiveCards.forEach((card) => {
+    if (!card.querySelector("img")) {
+      // Check if img already exists
+      const img = document.createElement("img");
+      img.className = "preview";
+      img.src = card.getAttribute("href");
+      img.alt = "Cover Tartil";
+      img.style = "width: 100%; height: auto; object-fit: cover;";
+      card.appendChild(img);
+    }
+  });
 
   // Modal event listener
   modal.addEventListener("show.bs.modal", (event) => {
@@ -25,6 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPage = 0; // 0 represents the cover page
     pageSelector.value = currentPage;
     updateImage();
+  });
+
+  modal.addEventListener("hidden.bs.modal", () => {
+    isLoading = false; // Reset loading state when modal is closed
   });
 
   // Populate page selector
@@ -43,6 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to update the displayed image with loading effect
   const updateImage = () => {
+    if (isLoading) return; // Prevent multiple loading overlays
+    isLoading = true;
+
     const loadingOverlay = document.createElement("div");
     loadingOverlay.className = "loading-overlay";
     loadingOverlay.innerHTML =
@@ -59,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentImage.onload = () => {
         currentImage.classList.remove("hidden");
         loadingOverlay.remove();
+        isLoading = false; // Reset loading state
       };
     }, 500);
   };
@@ -100,25 +131,151 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
-});
 
-// Dynamic copyright year
-const startYear = 2025; // Tahun dibuat
-const currentYear = new Date().getFullYear();
-const yearText =
-  startYear === currentYear ? `${startYear}` : `${startYear} - ${currentYear}`;
-document.getElementById("dynamicYear").textContent = yearText;
+  // Dynamic copyright year
+  const startYear = 2025; // Tahun dibuat
+  const currentYear = new Date().getFullYear();
+  const yearText =
+    startYear === currentYear
+      ? `${startYear}`
+      : `${startYear} - ${currentYear}`;
+  document.getElementById("dynamicYear").textContent = yearText;
 
-// Hide loading overlay after page load with fade-out effect
-window.addEventListener("load", () => {
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  setTimeout(() => {
-    document.body.classList.remove("overflow-hidden"); // Remove overflow hidden
-    loadingOverlay.classList.add("hidden"); // Add hidden class
-    // to trigger fade-out
+  // Hide loading overlay after page load with fade-out effect
+  window.addEventListener("load", () => {
+    const loadingOverlay = document.getElementById("loadingOverlay");
     setTimeout(() => {
-      loadingOverlay.style.display = "none"; // Ensure it's
-      // removed after fade-out
-    }, 500); // Match the CSS transition duration
-  }, 500); // Delay before starting fade-out
+      document.body.classList.remove("overflow-hidden"); // Remove overflow hidden
+      loadingOverlay.classList.add("hidden"); // Add hidden class
+      // to trigger fade-out
+      setTimeout(() => {
+        loadingOverlay.style.display = "none"; // Ensure it's
+        // removed after fade-out
+      }, 500); // Match the CSS transition duration
+    }, 500); // Delay before starting fade-out
+  });
+
+  const floatingIcon = document.getElementById("floatingIcon");
+  const feedbackDrawer = document.getElementById("feedbackDrawer");
+  const closeDrawer = document.getElementById("closeDrawer");
+  const feedbackTextarea = document.querySelector("textarea.form-control");
+
+  floatingIcon.addEventListener("click", () => {
+    feedbackDrawer.classList.add("open");
+  });
+
+  closeDrawer.addEventListener("click", () => {
+    feedbackDrawer.classList.remove("open");
+  });
+
+  // Auto-resize textarea based on input
+  // feedbackTextarea.addEventListener("input", () => {
+  //   feedbackTextarea.style.height = "auto"; // Reset height
+  //   feedbackTextarea.style.height = `${feedbackTextarea.scrollHeight}px`; // Adjust to content
+  // });
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDA3UVos4OiS4WkaYWBL2IVk90_9CF-68g",
+    authDomain: "portfolio-38ac1.firebaseapp.com",
+    projectId: "portfolio-38ac1",
+    storageBucket: "portfolio-38ac1.firebasestorage.app",
+    messagingSenderId: "236861676265",
+    appId: "1:236861676265:web:4baa6ffb8d6678be30ee78",
+    measurementId: "G-96YDFGB2CV",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const feedbackForm = document.querySelector("#feedbackDrawer textarea");
+  const feedbackSubmit = document.querySelector("#feedbackDrawer .btn-success");
+  const spinner = document.getElementById("spinner");
+  const adminKeyInput = document.getElementById("adminKey");
+  const authSubmit = document.getElementById("authSubmit");
+  const adminFeedbackList = document.getElementById("adminFeedbackList");
+
+  feedbackSubmit.addEventListener("click", async () => {
+    const message = feedbackForm.value.trim();
+
+    if (!message) {
+      Swal.fire({
+        icon: "warning",
+        title: "Oops...",
+        text: "Kritik dan saran tidak boleh kosong!",
+      });
+      return;
+    }
+
+    spinner.style.display = "flex";
+
+    try {
+      await addDoc(collection(db, "at-tartil"), {
+        message,
+        timestamp: serverTimestamp(),
+      });
+
+      spinner.style.display = "none";
+      feedbackForm.value = "";
+      Swal.fire({
+        icon: "success",
+        title: "Terima kasih!",
+        text: "Kritik dan saran berhasil dikirim!",
+      });
+    } catch (error) {
+      spinner.style.display = "none";
+      Swal.fire({
+        icon: "error",
+        title: "Gagal mengirim kritik dan saran",
+        text: "Silakan coba lagi nanti.",
+      });
+      console.error(error);
+    }
+  });
+
+  authSubmit.addEventListener("click", async () => {
+    const key = adminKeyInput.value.trim();
+
+    if (key !== "masokpakeko") {
+      Swal.fire({
+        icon: "error",
+        title: "Key Admin salah",
+      });
+      return;
+    }
+
+    const q = query(collection(db, "at-tartil"), orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(q);
+
+    adminFeedbackList.innerHTML = "";
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const time = data.timestamp?.toDate
+        ? new Date(data.timestamp.toDate()).toLocaleString()
+        : "Waktu tidak diketahui";
+
+      const feedbackItem = document.createElement("div");
+      feedbackItem.className = "list-group-item";
+      feedbackItem.innerHTML = `
+        <div>
+          <strong>${time}</strong>
+          <p>${data.message}</p>
+        </div>
+      `;
+
+      adminFeedbackList.appendChild(feedbackItem);
+    });
+
+    const feedbackAdminModal = new bootstrap.Modal(
+      document.getElementById("feedbackAdminModal")
+    );
+    feedbackAdminModal.show();
+  });
+
+  const triggerAuthModal = document.getElementById("triggerAuthModal");
+  const authModal = new bootstrap.Modal(document.getElementById("authModal"));
+
+  triggerAuthModal.addEventListener("dblclick", () => {
+    authModal.show();
+  });
 });
