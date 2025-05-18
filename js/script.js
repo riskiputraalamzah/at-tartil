@@ -84,6 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
     imageRequestId++;
     const thisRequestId = imageRequestId;
 
+    // Nonaktifkan tombol navigasi saat loading
+    prevPageButton.disabled = true;
+    nextPageButton.disabled = true;
+
     // Hapus spinner loading sebelumnya jika ada
     const prevSpinner =
       currentImage.parentElement.querySelector(".loading-overlay");
@@ -97,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentImage.classList.add("hidden");
     // Simulasi loading gambar (ganti src gambar di sini)
-    // Misal:
     // currentImage.src = ...
     // Untuk contoh, gunakan setTimeout
     setTimeout(() => {
@@ -110,11 +113,14 @@ document.addEventListener("DOMContentLoaded", () => {
       } dari Tartil ${currentTartil}`;
       currentImage.onload = () => {
         currentImage.classList.remove("hidden");
+        isLoading = false; // Reset loading state
+        // Aktifkan kembali tombol navigasi
+        prevPageButton.disabled = false;
+        nextPageButton.disabled = false;
         // Hapus spinner loading
         const spinner =
           currentImage.parentElement.querySelector(".loading-overlay");
         if (spinner) spinner.remove();
-        isLoading = false; // Reset loading state
       };
     }, 500);
   };
