@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPage = 0; // Start with the cover page
   let currentTartil = 1;
   let isLoading = false; // Prevent spamming navigation buttons
+  let imageRequestId = 0; // Untuk memastikan hanya permintaan terakhir yang diproses
 
   // Lazy load progressive images for Tartil cards
   const progressiveCards = document.querySelectorAll(".progressive.replace");
@@ -54,7 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   modal.addEventListener("hidden.bs.modal", () => {
-    isLoading = false; // Reset loading state when modal is closed
+    isLoading = false;
+    imageRequestId++;
+    // Hapus semua spinner loading di dalam modal
+    const spinners = modal.querySelectorAll(".loading-overlay");
+    spinners.forEach((el) => el.remove());
+    if (currentImage) currentImage.classList.remove("hidden");
   });
 
   // Populate page selector
@@ -73,8 +79,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to update the displayed image with loading effect
   const updateImage = () => {
-    if (isLoading) return; // Prevent multiple loading overlays
+    if (isLoading) return; // Abaikan jika masih loading
     isLoading = true;
+    imageRequestId++;
+    const thisRequestId = imageRequestId;
+
+    // Hapus spinner loading sebelumnya jika ada
+    const prevSpinner =
+      currentImage.parentElement.querySelector(".loading-overlay");
+    if (prevSpinner) prevSpinner.remove();
 
     const loadingOverlay = document.createElement("div");
     loadingOverlay.className = "loading-overlay";
@@ -83,7 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
     currentImage.parentElement.appendChild(loadingOverlay);
 
     currentImage.classList.add("hidden");
+    // Simulasi loading gambar (ganti src gambar di sini)
+    // Misal:
+    // currentImage.src = ...
+    // Untuk contoh, gunakan setTimeout
     setTimeout(() => {
+      // Jika requestId sudah berubah, abaikan hasil loading ini
+      if (imageRequestId !== thisRequestId) return;
       const pagePath = currentPage === 0 ? "cover" : currentPage;
       currentImage.src = `img/tartil${currentTartil}/${pagePath}.png`;
       currentImage.alt = `Halaman ${
@@ -91,7 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
       } dari Tartil ${currentTartil}`;
       currentImage.onload = () => {
         currentImage.classList.remove("hidden");
-        loadingOverlay.remove();
+        // Hapus spinner loading
+        const spinner =
+          currentImage.parentElement.querySelector(".loading-overlay");
+        if (spinner) spinner.remove();
         isLoading = false; // Reset loading state
       };
     }, 500);
@@ -99,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event listeners for navigation
   prevPageButton.addEventListener("click", () => {
+    if (isLoading) return; // Abaikan jika masih loading
     if (currentPage > 0) {
       currentPage--;
       pageSelector.value = currentPage;
@@ -107,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   nextPageButton.addEventListener("click", () => {
+    if (isLoading) return; // Abaikan jika masih loading
     if (currentPage < 36) {
       currentPage++;
       pageSelector.value = currentPage;
@@ -115,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   pageSelector.addEventListener("change", (event) => {
+    if (isLoading) return; // Abaikan jika masih loading
     currentPage = parseInt(event.target.value, 10);
     updateImage();
   });
@@ -155,35 +180,35 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Check if the website is already fully loaded
-  if (document.readyState === "complete") {
-    loadingProgress.textContent = "100%";
-    hideLoadingOverlay();
-  } else {
-    // Show the loading overlay and update progress dynamically
-    let progress = 0;
-    const updateProgress = () => {
-      if (document.readyState === "complete") {
-        // If fully loaded, set progress to 100% and hide the overlay
-        loadingProgress.textContent = "100%";
-        hideLoadingOverlay();
-      } else {
-        // Otherwise, increment progress dynamically and continue updating
-        const increment = Math.floor(Math.random() * 10) + 1; // Random increment between 1 and 10
-        progress = Math.min(progress + increment, 99); // Cap progress at 99%
-        loadingProgress.textContent = `${progress}%`;
-        setTimeout(updateProgress, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
-      }
-    };
+  // if (document.readyState === "complete") {
+  //   loadingProgress.textContent = "100%";
+  //   hideLoadingOverlay();
+  // } else {
+  //   // Show the loading overlay and update progress dynamically
+  //   let progress = 0;
+  //   const updateProgress = () => {
+  //     if (document.readyState === "complete") {
+  //       // If fully loaded, set progress to 100% and hide the overlay
+  //       loadingProgress.textContent = "100%";
+  //       hideLoadingOverlay();
+  //     } else {
+  //       // Otherwise, increment progress dynamically and continue updating
+  //       const increment = Math.floor(Math.random() * 10) + 1; // Random increment between 1 and 10
+  //       progress = Math.min(progress + increment, 99); // Cap progress at 99%
+  //       loadingProgress.textContent = `${progress}%`;
+  //       setTimeout(updateProgress, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
+  //     }
+  //   };
 
-    // Start updating progress
-    updateProgress();
+  //   // Start updating progress
+  //   updateProgress();
 
-    // Ensure overlay hides when the load event fires
-    window.addEventListener("load", () => {
-      loadingProgress.textContent = "100%";
-      hideLoadingOverlay();
-    });
-  }
+  //   // Ensure overlay hides when the load event fires
+  //   window.addEventListener("load", () => {
+  //     loadingProgress.textContent = "100%";
+  //     hideLoadingOverlay();
+  //   });
+  // }
 
   const floatingIcon = document.getElementById("floatingIcon");
   const feedbackDrawer = document.getElementById("feedbackDrawer");

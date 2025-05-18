@@ -75,8 +75,8 @@
       }
     </style>
   </head>
-  <body class="bg-light overflow-hidden">
-    <div id="loadingOverlay">
+  <body class="bg-light">
+    <!-- <div id="loadingOverlay">
       <div class="text-center">
         <img
           src="img/logo.png"
@@ -89,7 +89,7 @@
         <div id="loadingProgress" class="text-light fs-4">0%</div>
         <p class="text-light mt-2">Loading</p>
       </div>
-    </div>
+    </div> -->
 
     <div
       id="spinner"
@@ -439,6 +439,22 @@
             console.error("Service Worker registration failed:", error);
           });
       }
+    </script>
+
+    <script>
+      document.addEventListener("contextmenu", (event) =>
+        event.preventDefault()
+      );
+      document.addEventListener("keydown", (event) => {
+        if (
+          event.key === "F12" ||
+          (event.ctrlKey && event.shiftKey && event.key === "I") ||
+          (event.ctrlKey && event.shiftKey && event.key === "J") ||
+          (event.ctrlKey && event.key === "U")
+        ) {
+          event.preventDefault();
+        }
+      });
     </script>
   </body>
 </html>
