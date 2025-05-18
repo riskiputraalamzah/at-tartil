@@ -4,18 +4,32 @@
   box-sizing: border-box;
 }
 body {
-  /* background: linear-gradient(135deg, #a8e063, #56ab2f); */
-  background-image: url(../img/bg6.png);
-  background-position: top;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  transition: background 1s linear;
+  margin: 0;
+  padding: 0;
 
-  background-size: cover;
-  color: #f8f9fa; /* Adjusted to a soft white for better readability */
-  font-family: "Arial", sans-serif;
-  position: relative;
+  color: #fff;
+  background: linear-gradient(to right, #56ab2f, #a8e063); /* kombinasi hijau */
   /* overflow: hidden; */
+  overflow-x: hidden;
+  position: relative;
+  font-family: sans-serif;
+}
+.bubble {
+  position: fixed;
+  bottom: -200px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  animation: rise 10s infinite ease-in;
+}
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-120vh) scale(1.5); /* naik tinggi sekali */
+    opacity: 0;
+  }
 }
 
 body::before {
@@ -27,7 +41,7 @@ body::before {
     rgba(0, 0, 0, 0.2) 0%,
     rgba(0, 0, 0, 0.5) 100%
   );
-  /* opacity: 0.2; */
+  opacity: 0.2;
   z-index: 1;
 }
 body .container,
