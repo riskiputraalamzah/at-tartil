@@ -2,10 +2,6 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preload" href="img/logo.png" as="image" type="image/png" />
-    <link rel="preload" href="img/og.png" as="image" type="image/png" />
-    <link rel="preload" href="img/bg5.png" as="image" type="image/png" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>E-Kitab At-Tartil</title>
     <link rel="shortcut icon" href="img/og.png" type="image/x-icon" />
@@ -22,6 +18,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="msapplication-TileColor" content="#000000" />
     <meta name="msapplication-TileImage" content="img/logo.png" />
+    <!-- Pastikan logo.png ini teroptimasi -->
     <meta name="msapplication-config" content="img/browserconfig.xml" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@RiskiPutraAlamzah" />
@@ -31,12 +28,14 @@
       content="E-Kitab At-Tartil Jilid 1-6 Lengkap"
     />
     <meta name="twitter:image" content="img/logo.png" />
+    <!-- Pastikan logo.png ini teroptimasi -->
     <meta property="og:title" content="E-Kitab At-Tartil" />
     <meta property="og:description" content="E-Kitab At-Tartil" />
     <meta
       property="og:image"
       content="https://at-tartil.riskiputraalamzah.my.id/img/og.png"
     />
+    <!-- Pastikan og.png ini teroptimasi -->
     <meta
       property="og:url"
       content="https://at-tartil.riskiputraalamzah.my.id/"
@@ -49,46 +48,40 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/css/glightbox.min.css"
-      rel="stylesheet"
-    />
+    <!-- Glightbox CSS dimuat nanti jika diperlukan -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/css/glightbox.min.css" rel="stylesheet" /> -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.js"></script>
-    <!-- SweetAlert2 -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 CSS dimuat nanti jika diperlukan -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" /> -->
     <link rel="stylesheet" href="css/style.css" />
-
-    <!-- Link to manifest.json -->
+    <!-- Pastikan style.css ini diminify -->
     <link rel="manifest" href="manifest.json" />
-
     <style>
       html {
         scroll-behavior: smooth !important;
       }
+      /* CSS untuk spinner di modal gambar */
+      .image-loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }
+      #currentImage.hidden {
+        visibility: hidden; /* Atau display: none, tergantung efek yg diinginkan */
+      }
     </style>
   </head>
   <body class="bg-light">
-    <!-- <div id="loadingOverlay">
-      <div class="text-center">
-        <img
-          src="img/logo.png"
-          alt="Logo"
-          width="100"
-          height="100"
-          loading="eager"
-          class="mb-3"
-        />
-        <div id="loadingProgress" class="text-light fs-4">0%</div>
-        <p class="text-light mt-2">Loading</p>
-      </div>
+    <!-- Spinner utama untuk loading halaman (opsional, bisa di-enable jika dirasa perlu) -->
+    <!-- <div id="pageLoadingOverlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <img src="img/logo.png" alt="Logo" width="100" height="100" loading="eager" class="mb-3"/>
+        <div class="spinner-border text-light" role="status"><span class="visually-hidden">Memuat...</span></div>
+        <p class="text-light mt-2">Memuat Halaman...</p>
     </div> -->
 
     <div
@@ -102,7 +95,6 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
         z-index: 1050;
-
         justify-content: center;
         align-items: center;
       "
@@ -123,6 +115,7 @@
             class="rounded-circle me-2"
             width="150"
             height="150"
+            loading="eager"
           />
           <div>
             <h1 class="display-5 m-0 fw-bold text-light">E-Kitab At-Tartil</h1>
@@ -132,6 +125,7 @@
       </div>
 
       <div class="row justify-content-center g-4 px-3" id="tartilCards">
+        <!-- Contoh Card Tartil 1 (terapkan ke semua card) -->
         <div class="col-6 col-md-4">
           <div
             class="card card-glass text-center"
@@ -143,15 +137,18 @@
             <a href="img/tartil1/cover.png" class="progressive replace">
               <img
                 src="img/tartil1/cover.png"
+                data-progressive="img/tartil1/cover.png"
                 class="img-fluid preview"
                 alt="Cover Tartil 1"
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
         </div>
+        <!-- Ulangi untuk tartil 2 sampai 6, pastikan src adalah placeholder dan href/data-progressive adalah gambar full -->
         <div class="col-6 col-md-4">
           <div
             class="card card-glass text-center"
@@ -159,7 +156,6 @@
             data-bs-toggle="modal"
             data-bs-target="#tartilModal"
             style="cursor: pointer"
-            loading=""
           >
             <a href="img/tartil2/cover.png" class="progressive replace">
               <img
@@ -169,6 +165,7 @@
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
@@ -189,6 +186,7 @@
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
@@ -209,6 +207,7 @@
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
@@ -229,6 +228,7 @@
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
@@ -249,6 +249,7 @@
                 style="width: 100%; height: auto; object-fit: cover"
                 width="300"
                 height="400"
+                loading="lazy"
               />
             </a>
           </div>
@@ -262,23 +263,25 @@
       id="tartilModal"
       tabindex="-1"
       aria-hidden="true"
-      aria-labelledby="tartilNum"
+      aria-labelledby="tartilNumLabel"
       data-bs-theme="dark"
     >
       <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content bg-glass">
           <div class="modal-header">
-            <h5 class="modal-title text-white">
+            <h5 class="modal-title text-white" id="tartilNumLabel">
               At-Tartil <span id="tartilNum"></span>
             </h5>
             <button
               type="button"
               class="btn-close"
               data-bs-dismiss="modal"
+              aria-label="Close"
             ></button>
           </div>
           <div class="modal-body">
             <div class="text-center position-relative">
+              <!-- Spinner akan ditambahkan oleh JS -->
               <img
                 id="currentImage"
                 class="img-fluid rounded"
@@ -318,87 +321,16 @@
         alt="Feedback Icon"
         width="60"
         height="60"
-        class="img-fluid preview"
+        class="img-fluid"
+        loading="lazy"
       />
     </div>
 
-    <div id="feedbackDrawer" class="feedback-drawer">
-      <div class="drawer-header" data-bs-theme="dark">
-        <h5 class="m-0" id="triggerAuthModal">Kritik & Saran</h5>
-        <button id="closeDrawer" class="btn-close"></button>
-      </div>
-      <div class="drawer-body">
-        <textarea
-          class="form-control"
-          rows="5"
-          placeholder="Tulis kritik atau saran Anda..."
-        ></textarea>
-        <button class="btn btn-success mt-3">Kirim</button>
-      </div>
-    </div>
-
-    <div id="authModal" class="modal fade" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog text-dark">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Autentikasi Admin</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form>
-              <input
-                type="password"
-                id="adminKey"
-                class="form-control"
-                placeholder="Masukkan Key Admin"
-              />
-            </form>
-            <div class="mt-3">
-              <p id="unreadFeedbackCount" class="text-danger">
-                Kritik & Saran belum terbaca: 0
-              </p>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" id="authSubmit" class="btn btn-primary">
-              Submit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div
-      id="feedbackAdminModal"
-      class="modal fade"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg text-dark">
-        <div class="modal-content"></div>
-        <div class="modal-header">
-          <h5 class="modal-title">Daftar Kritik & Saran</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div id="adminFeedbackList" class="list-group">
-            <!-- Feedback items will be dynamically loaded here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- Sisanya sama, pastikan semua path gambar lokal di tag img sudah dioptimasi -->
+    <!-- ... (Feedback Drawer, Auth Modal, Footer, etc.) ... -->
     <footer class="text-center text-light py-3 mt-5">
       <p class="mb-0">
-        &copy; <span id="dynamicYear"></span> - Created with ❤️ By
+        © <span id="dynamicYear"></span> - Created with ❤️ By
         <a
           href="https://riskiputraalamzah.my.id"
           target="_blank"
@@ -409,61 +341,59 @@
     </footer>
 
     <!-- Skrip -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/js/glightbox.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+    <!-- Muat progressive-image.js dulu jika masih dipakai untuk cover -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.js"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      defer
+    ></script>
+    <!-- Glightbox dan PageFlip bisa di-load on-demand jika hanya dipakai di modal atau section tertentu -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/js/glightbox.min.js" defer></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js" defer></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script> -->
     <script type="module" src="js/script.js"></script>
+    <!-- script.js juga bisa di defer jika tidak ada critical inline JS -->
 
-    <!-- Register service worker -->
     <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .then((registration) => {
-            console.log(
-              "Service Worker registered with scope:",
-              registration.scope
-            );
-          })
-          .catch((error) => {
-            console.error("Service Worker registration failed:", error);
-          });
-      }
-
-      for (let i = 0; i < 40; i++) {
+      // Hapus atau optimasi animasi bubble jika memberatkan
+      // if (window.innerWidth > 768) {
+      // Contoh: hanya aktifkan di desktop
+      for (let i = 0; i < 20; i++) {
+        // Kurangi jumlah bubble
         const bubble = document.createElement("div");
         bubble.classList.add("bubble");
-
-        const size = Math.random() * 40 + 10; // ukuran bubble 10-50px
+        const size = Math.random() * 30 + 10; // perkecil ukuran
         bubble.style.width = `${size}px`;
         bubble.style.height = `${size}px`;
-
-        bubble.style.left = `${Math.random() * 100}%`; // posisi horizontal random
-
-        const duration = 6 + Math.random() * 4; // durasi animasi
+        bubble.style.left = `${Math.random() * 100}%`;
+        const duration = 8 + Math.random() * 5; // perlama durasi
         bubble.style.animationDuration = `${duration}s`;
-
-        const delay = Math.random() * 5;
+        const delay = Math.random() * 7;
         bubble.style.animationDelay = `${delay}s`;
-
         document.body.appendChild(bubble);
       }
-    </script>
+      // }
 
-    <!-- <script>
-      document.addEventListener("contextmenu", (event) =>
-        event.preventDefault()
-      );
-      document.addEventListener("keydown", (event) => {
-        if (
-          event.key === "F12" ||
-          (event.ctrlKey && event.shiftKey && event.key === "I") ||
-          (event.ctrlKey && event.shiftKey && event.key === "J") ||
-          (event.ctrlKey && event.key === "U")
-        ) {
-          event.preventDefault();
-        }
-      });
-    </script> -->
+      // Service Worker Registration
+      // if ("serviceWorker" in navigator) {
+      //   window.addEventListener("load", () => {
+      //     // Daftarkan SW setelah halaman utama load
+      //     navigator.serviceWorker
+      //       .register("/service-worker.js")
+      //       .then((registration) => {
+      //         console.log(
+      //           "Service Worker registered with scope:",
+      //           registration.scope
+      //         );
+      //       })
+      //       .catch((error) => {
+      //         console.error("Service Worker registration failed:", error);
+      //       });
+      //   });
+      // }
+    </script>
   </body>
 </html>

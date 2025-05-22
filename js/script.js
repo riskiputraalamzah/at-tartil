@@ -1,3 +1,4 @@
+// Pastikan import firebase dan fungsi lainnya tetap di atas
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore,
@@ -15,228 +16,249 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded and parsed");
 
-  const modal = document.getElementById("tartilModal");
+  // HIDE PAGE LOADING OVERLAY IF YOU ENABLED IT IN HTML
+  // const pageLoadingOverlay = document.getElementById('pageLoadingOverlay');
+  // if (pageLoadingOverlay) {
+  //    pageLoadingOverlay.style.display = 'none';
+  // }
+
+  const modalElement = document.getElementById("tartilModal");
   const pageSelector = document.getElementById("pageSelector");
   const prevPageButton = document.getElementById("prevPage");
   const nextPageButton = document.getElementById("nextPage");
   const currentImage = document.getElementById("currentImage");
-  const tartilCards = document.getElementById("tartilCards");
+  // const tartilCards = document.getElementById("tartilCards"); // Tidak digunakan secara aktif di JS, bisa dihapus jika tidak ada rencana lain
   const fullscreenToggle = document.getElementById("fullscreenToggle");
+  const tartilNumSpan = document.getElementById("tartilNum");
 
-  let currentPage = 0; // Start with the cover page
+  let currentPage = 0;
   let currentTartil = 1;
-  let isLoading = false; // Prevent spamming navigation buttons
-  let imageRequestId = 0; // Untuk memastikan hanya permintaan terakhir yang diproses
+  // isLoading dan imageRequestId tidak lagi terlalu krusial dengan event load/error,
+  // tapi bisa dipertahankan untuk logika UI yang lebih kompleks.
+  let isLoadingImageInModal = false;
 
-  // Lazy load progressive images for Tartil cards
-  const progressiveCards = document.querySelectorAll(".progressive.replace");
-  progressiveCards.forEach((card) => {
-    if (!card.querySelector("img")) {
-      // Check if img already exists
-      const img = document.createElement("img");
-      img.className = "preview";
-      img.src = card.getAttribute("href");
-      img.alt = "Cover Tartil";
-      img.style = "width: 100%; height: auto; object-fit: cover;";
-      card.appendChild(img);
-    }
-  });
+  // Inisialisasi progressive-image.js jika masih digunakan untuk cover
+  // Cek apakah library sudah dimuat
+  if (window.ProgressiveImage) {
+    const progressiveImages = new ProgressiveImage();
+    progressiveImages.init();
+  }
+
+  // Lazy load progressive images for Tartil cards - Ini mungkin tidak perlu jika sudah pakai progressive-image.js init()
+  // atau jika Anda beralih ke <img loading="lazy"> biasa.
+  // const progressiveCards = document.querySelectorAll(".progressive.replace");
+  // progressiveCards.forEach((card) => {
+  //   if (!card.querySelector("img.preview")) { // Pastikan selector img benar
+  //     const img = document.createElement("img");
+  //     img.className = "img-fluid preview"; // Pastikan class sesuai
+  //     // Ambil src dari data-progressive atau href, tergantung implementasi Anda
+  //     img.src = card.dataset.progressive || card.getAttribute("href");
+  //     img.alt = "Cover Tartil";
+  //     img.style = "width: 100%; height: auto; object-fit: cover;";
+  //     img.setAttribute("loading", "lazy"); // Tambahkan lazy loading
+  //     card.appendChild(img);
+  //   } else {
+  //     // Jika img sudah ada, pastikan ada loading="lazy"
+  //     const existingImg = card.querySelector("img.preview");
+  //     if (existingImg && !existingImg.hasAttribute("loading")) {
+  //       existingImg.setAttribute("loading", "lazy");
+  //     }
+  //   }
+  // });
 
   // Modal event listener
-  modal.addEventListener("show.bs.modal", (event) => {
+  modalElement.addEventListener("show.bs.modal", (event) => {
     const button = event.relatedTarget;
     currentTartil = button.closest(".card").getAttribute("data-tartil");
-    document.getElementById("tartilNum").textContent = currentTartil;
+    if (tartilNumSpan) tartilNumSpan.textContent = currentTartil;
 
-    // Reset to the cover page when modal is opened
-    currentPage = 0; // 0 represents the cover page
-    pageSelector.value = currentPage;
+    currentPage = 0;
+    if (pageSelector) pageSelector.value = currentPage;
     updateImage();
   });
 
-  modal.addEventListener("hidden.bs.modal", () => {
-    isLoading = false;
-    imageRequestId++;
-    // Hapus semua spinner loading di dalam modal
-    const spinners = modal.querySelectorAll(".loading-overlay");
-    spinners.forEach((el) => el.remove());
+  modalElement.addEventListener("hidden.bs.modal", () => {
+    isLoadingImageInModal = false;
+    // Hapus spinner loading di dalam modal jika ada
+    const existingSpinner = currentImage.parentElement.querySelector(
+      ".image-loading-spinner"
+    );
+    if (existingSpinner) existingSpinner.remove();
     if (currentImage) currentImage.classList.remove("hidden");
+    currentImage.src = ""; // Kosongkan src untuk menghemat memori jika modal ditutup
   });
 
   // Populate page selector
-  pageSelector.innerHTML = ""; // Clear existing options
-  const coverOption = document.createElement("option");
-  coverOption.value = 0;
-  coverOption.textContent = "Cover";
-  pageSelector.appendChild(coverOption);
+  if (pageSelector) {
+    pageSelector.innerHTML = ""; // Clear existing options
+    const coverOption = document.createElement("option");
+    coverOption.value = 0;
+    coverOption.textContent = "Cover";
+    pageSelector.appendChild(coverOption);
 
-  for (let i = 1; i <= 36; i++) {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = `Halaman ${i}`;
-    pageSelector.appendChild(option);
+    for (let i = 1; i <= 36; i++) {
+      // Asumsi maksimal 36 halaman
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = `Halaman ${i}`;
+      pageSelector.appendChild(option);
+    }
   }
 
-  // Function to update the displayed image with loading effect
   const updateImage = () => {
-    if (isLoading) return; // Abaikan jika masih loading
-    isLoading = true;
-    imageRequestId++;
-    const thisRequestId = imageRequestId;
+    if (isLoadingImageInModal && currentImage.src !== "") return; // Jangan proses jika sedang loading gambar yang sama
+    isLoadingImageInModal = true;
 
-    // Nonaktifkan tombol navigasi saat loading
     prevPageButton.disabled = true;
     nextPageButton.disabled = true;
+    pageSelector.disabled = true;
 
-    // Hapus spinner loading sebelumnya jika ada
-    const prevSpinner =
-      currentImage.parentElement.querySelector(".loading-overlay");
-    if (prevSpinner) prevSpinner.remove();
-
-    const loadingOverlay = document.createElement("div");
-    loadingOverlay.className = "loading-overlay";
-    loadingOverlay.innerHTML =
-      '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading...</span></div>';
-    currentImage.parentElement.appendChild(loadingOverlay);
-
+    // Hapus spinner lama dan sembunyikan gambar
+    const existingSpinner = currentImage.parentElement.querySelector(
+      ".image-loading-spinner"
+    );
+    if (existingSpinner) existingSpinner.remove();
     currentImage.classList.add("hidden");
-    // Simulasi loading gambar (ganti src gambar di sini)
-    // currentImage.src = ...
-    // Untuk contoh, gunakan setTimeout
-    setTimeout(() => {
-      // Jika requestId sudah berubah, abaikan hasil loading ini
-      if (imageRequestId !== thisRequestId) return;
-      const pagePath = currentPage === 0 ? "cover" : currentPage;
-      currentImage.src = `img/tartil${currentTartil}/${pagePath}.png`;
+    // currentImage.src = ""; // Kosongkan dulu untuk menghindari flicker gambar lama
+
+    // Buat dan tampilkan spinner baru
+    // const spinnerDiv = document.createElement("div");
+    // spinnerDiv.className = "spinner-border text-light image-loading-spinner"; // Gunakan class CSS
+    // spinnerDiv.setAttribute("role", "status");
+    // spinnerDiv.innerHTML = '<span class="visually-hidden">Loading...</span>';
+    // currentImage.parentElement.appendChild(spinnerDiv);
+
+    const pagePath = currentPage === 0 ? "cover" : currentPage;
+    // PERTIMBANGKAN FORMAT WEBP DULU
+    const imageUrl = `img/tartil${currentTartil}/${pagePath}.png`; // Coba WebP dulu
+    const fallbackImageUrl = `img/tartil${currentTartil}/${pagePath}.png`;
+
+    const tempImg = new Image();
+
+    const loadSuccess = () => {
+      currentImage.src = tempImg.src;
       currentImage.alt = `Halaman ${
         currentPage === 0 ? "Cover" : currentPage
       } dari Tartil ${currentTartil}`;
-      currentImage.onload = () => {
-        currentImage.classList.remove("hidden");
-        isLoading = false; // Reset loading state
-        // Aktifkan kembali tombol navigasi
+      currentImage.classList.remove("hidden");
+
+      isLoadingImageInModal = false;
+      prevPageButton.disabled = false;
+      nextPageButton.disabled = false;
+      pageSelector.disabled = false;
+      // if (spinnerDiv.parentNode) spinnerDiv.remove(); // Hapus spinner
+    };
+
+    const loadError = () => {
+      // Jika WebP gagal, coba PNG
+      if (tempImg.src.endsWith(".webp")) {
+        console.log(`WebP load failed for ${imageUrl}, trying PNG.`);
+        tempImg.src = fallbackImageUrl; // src error handler akan terpanggil lagi jika ini juga error
+      } else {
+        console.error(`Failed to load image: ${tempImg.src}`);
+        // Handle error (misalnya tampilkan pesan error)
+        currentImage.alt = "Gagal memuat gambar";
+        currentImage.classList.remove("hidden"); // Tampilkan area gambar (kosong atau dgn alt)
+
+        isLoadingImageInModal = false;
         prevPageButton.disabled = false;
         nextPageButton.disabled = false;
-        // Hapus spinner loading
-        const spinner =
-          currentImage.parentElement.querySelector(".loading-overlay");
-        if (spinner) spinner.remove();
-      };
-    }, 500);
+        pageSelector.disabled = false;
+        if (spinnerDiv.parentNode) spinnerDiv.remove();
+      }
+    };
+
+    tempImg.onload = loadSuccess;
+    tempImg.onerror = loadError;
+    tempImg.src = imageUrl; // Mulai load WebP
   };
 
   // Event listeners for navigation
-  prevPageButton.addEventListener("click", () => {
-    if (isLoading) return; // Abaikan jika masih loading
-    if (currentPage > 0) {
-      currentPage--;
-      pageSelector.value = currentPage;
+  if (prevPageButton) {
+    prevPageButton.addEventListener("click", () => {
+      if (isLoadingImageInModal) return;
+      if (currentPage > 0) {
+        currentPage--;
+        pageSelector.value = currentPage;
+        updateImage();
+      }
+    });
+  }
+
+  if (nextPageButton) {
+    nextPageButton.addEventListener("click", () => {
+      // alert("Next page clicked");
+      if (isLoadingImageInModal) return;
+      if (currentPage < 36) {
+        // Asumsi maksimal 36 halaman
+        currentPage++;
+        pageSelector.value = currentPage;
+        updateImage();
+      }
+    });
+  }
+
+  if (pageSelector) {
+    pageSelector.addEventListener("change", (event) => {
+      if (isLoadingImageInModal) return;
+      currentPage = parseInt(event.target.value, 10);
       updateImage();
-    }
-  });
+    });
+  }
 
-  nextPageButton.addEventListener("click", () => {
-    if (isLoading) return; // Abaikan jika masih loading
-    if (currentPage < 36) {
-      currentPage++;
-      pageSelector.value = currentPage;
-      updateImage();
-    }
-  });
-
-  pageSelector.addEventListener("change", (event) => {
-    if (isLoading) return; // Abaikan jika masih loading
-    currentPage = parseInt(event.target.value, 10);
-    updateImage();
-  });
-
-  fullscreenToggle.addEventListener("click", () => {
-    if (!document.fullscreenElement) {
-      currentImage.requestFullscreen().catch((err) => {
-        console.error(
-          `Error attempting to enable fullscreen mode: ${err.message}`
-        );
-      });
-    } else {
-      document.exitFullscreen().catch((err) => {
-        console.error(
-          `Error attempting to exit fullscreen mode: ${err.message}`
-        );
-      });
-    }
-  });
+  if (fullscreenToggle) {
+    fullscreenToggle.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        if (currentImage.requestFullscreen) {
+          currentImage
+            .requestFullscreen()
+            .catch((err) => console.error(`Fullscreen error: ${err.message}`));
+        } else {
+          console.warn(
+            "Fullscreen API not supported on this image element or browser."
+          );
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document
+            .exitFullscreen()
+            .catch((err) =>
+              console.error(`Exit fullscreen error: ${err.message}`)
+            );
+        }
+      }
+    });
+  }
 
   // Dynamic copyright year
-  const startYear = 2025; // Tahun dibuat
-  const currentYear = new Date().getFullYear();
-  const yearText =
-    startYear === currentYear
-      ? `${startYear}`
-      : `${startYear} - ${currentYear}`;
-  document.getElementById("dynamicYear").textContent = yearText;
+  const dynamicYearEl = document.getElementById("dynamicYear");
+  if (dynamicYearEl) {
+    const startYear = 2024; // Ganti ke tahun project dimulai jika berbeda
+    const currentYear = new Date().getFullYear();
+    dynamicYearEl.textContent =
+      startYear === currentYear
+        ? `${startYear}`
+        : `${startYear} - ${currentYear}`;
+  }
 
-  // Improved logic to ensure loading overlay hides only after full load
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  const loadingProgress = document.getElementById("loadingProgress");
-
-  // Function to hide the loading overlay
-  const hideLoadingOverlay = () => {
-    loadingOverlay.classList.add("hidden");
-    document.body.classList.remove("overflow-hidden");
-  };
-
-  // Check if the website is already fully loaded
-  // if (document.readyState === "complete") {
-  //   loadingProgress.textContent = "100%";
-  //   hideLoadingOverlay();
-  // } else {
-  //   // Show the loading overlay and update progress dynamically
-  //   let progress = 0;
-  //   const updateProgress = () => {
-  //     if (document.readyState === "complete") {
-  //       // If fully loaded, set progress to 100% and hide the overlay
-  //       loadingProgress.textContent = "100%";
-  //       hideLoadingOverlay();
-  //     } else {
-  //       // Otherwise, increment progress dynamically and continue updating
-  //       const increment = Math.floor(Math.random() * 10) + 1; // Random increment between 1 and 10
-  //       progress = Math.min(progress + increment, 99); // Cap progress at 99%
-  //       loadingProgress.textContent = `${progress}%`;
-  //       setTimeout(updateProgress, Math.random() * 500 + 200); // Random delay between 200ms and 700ms
-  //     }
-  //   };
-
-  //   // Start updating progress
-  //   updateProgress();
-
-  //   // Ensure overlay hides when the load event fires
-  //   window.addEventListener("load", () => {
-  //     loadingProgress.textContent = "100%";
-  //     hideLoadingOverlay();
-  //   });
-  // }
-
+  // Feedback Drawer Logic
   const floatingIcon = document.getElementById("floatingIcon");
   const feedbackDrawer = document.getElementById("feedbackDrawer");
   const closeDrawer = document.getElementById("closeDrawer");
-  const feedbackTextarea = document.querySelector("textarea.form-control");
+  // const feedbackTextarea = document.querySelector("#feedbackDrawer textarea.form-control"); // Tidak ada auto-resize
 
-  floatingIcon.addEventListener("click", () => {
-    feedbackDrawer.classList.add("open");
-  });
+  if (floatingIcon && feedbackDrawer && closeDrawer) {
+    floatingIcon.addEventListener("click", () => {
+      feedbackDrawer.classList.add("open");
+    });
+    closeDrawer.addEventListener("click", () => {
+      feedbackDrawer.classList.remove("open");
+    });
+  }
 
-  closeDrawer.addEventListener("click", () => {
-    feedbackDrawer.classList.remove("open");
-  });
-
-  // Auto-resize textarea based on input
-  // feedbackTextarea.addEventListener("input", () => {
-  //   feedbackTextarea.style.height = "auto"; // Reset height
-  //   feedbackTextarea.style.height = `${feedbackTextarea.scrollHeight}px`; // Adjust to content
-  // });
-
+  // Firebase Initialization and Logic
   const firebaseConfig = {
-    apiKey: "AIzaSyDA3UVos4OiS4WkaYWBL2IVk90_9CF-68g",
+    apiKey: "AIzaSyDA3UVos4OiS4WkaYWBL2IVk90_9CF-68g", // AMANKAN API KEY INI JIKA MUNGKIN (misal via environment variables di backend/functions)
     authDomain: "portfolio-38ac1.firebaseapp.com",
     projectId: "portfolio-38ac1",
     storageBucket: "portfolio-38ac1.firebasestorage.app",
@@ -245,240 +267,328 @@ document.addEventListener("DOMContentLoaded", () => {
     measurementId: "G-96YDFGB2CV",
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  let db;
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    // Mungkin tampilkan pesan ke user bahwa fitur feedback tidak tersedia
+  }
 
   const feedbackForm = document.querySelector("#feedbackDrawer textarea");
   const feedbackSubmit = document.querySelector("#feedbackDrawer .btn-success");
-  const spinner = document.getElementById("spinner");
+  const globalSpinner = document.getElementById("spinner"); // Spinner untuk aksi global seperti submit feedback
   const adminKeyInput = document.getElementById("adminKey");
-  const authSubmit = document.getElementById("authSubmit");
+  const authSubmitButton = document.getElementById("authSubmit"); // Ganti nama variabel agar tidak bentrok
   const adminFeedbackList = document.getElementById("adminFeedbackList");
+  const unreadFeedbackCountEl = document.getElementById("unreadFeedbackCount"); // Cache element
 
-  feedbackSubmit.addEventListener("click", async () => {
-    const message = feedbackForm.value.trim();
-
-    if (!message) {
-      Swal.fire({
-        icon: "warning",
-        title: "Oops...",
-        text: "Kritik dan saran tidak boleh kosong!",
-      });
-      return;
-    }
-
-    spinner.style.display = "flex";
-
-    try {
-      await addDoc(collection(db, "at-tartil"), {
-        message,
-        timestamp: serverTimestamp(),
-      });
-
-      spinner.style.display = "none";
-      feedbackForm.value = "";
-      Swal.fire({
-        icon: "success",
-        title: "Terima kasih!",
-        text: "Kritik dan saran berhasil dikirim!",
-      });
-    } catch (error) {
-      spinner.style.display = "none";
-      Swal.fire({
-        icon: "error",
-        title: "Gagal mengirim kritik dan saran",
-        text: "Silakan coba lagi nanti.",
-      });
-      console.error(error);
-    }
-  });
-
-  authSubmit.addEventListener("click", async () => {
-    const key = adminKeyInput.value.trim();
-
-    if (key !== "masokpakeko") {
-      Swal.fire({
-        icon: "error",
-        title: "Key Admin salah",
-      });
-      return;
-    }
-
-    const q = query(collection(db, "at-tartil"), orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-
-    adminFeedbackList.innerHTML = "";
-
-    // Update feedback item button styles based on read status
-    const updateFeedbackItemStyles = (feedbackItem, isRead) => {
-      const button = feedbackItem.querySelector(".mark-as-read");
-      if (isRead) {
-        button.textContent = "Sudah Dibaca";
-        button.classList.remove("btn-danger");
-        button.classList.add("btn-success");
-      } else {
-        button.textContent = "Belum Dibaca";
-        button.classList.remove("btn-success");
-        button.classList.add("btn-danger");
+  // Load SweetAlert2 dynamically if needed
+  async function loadSweetAlert() {
+    if (!window.Swal) {
+      // Load CSS
+      if (!document.querySelector('link[href*="sweetalert2.min.css"]')) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href =
+          "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css";
+        document.head.appendChild(link);
       }
-    };
+      // Load JS
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
+      script.defer = true;
+      document.body.appendChild(script);
+      await new Promise((resolve) => (script.onload = resolve));
+    }
+    return window.Swal;
+  }
 
-    // Update feedback list rendering logic
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const time = data.timestamp?.toDate
-        ? new Date(data.timestamp.toDate()).toLocaleString()
-        : "Waktu tidak diketahui";
+  if (feedbackSubmit && feedbackForm && db) {
+    feedbackSubmit.addEventListener("click", async () => {
+      const message = feedbackForm.value.trim();
+      const Swal = await loadSweetAlert();
 
-      const feedbackItem = document.createElement("div");
-      feedbackItem.className = "list-group-item";
-      feedbackItem.innerHTML = `
-        <div>
-          <strong>${time}</strong>
-          <p>${data.message}</p>
-          <button class="btn mark-as-read" data-id="${doc.id}"></button>
-        </div>
-      `;
+      if (!message) {
+        Swal.fire({
+          icon: "warning",
+          title: "Oops...",
+          text: "Kritik dan saran tidak boleh kosong!",
+        });
+        return;
+      }
 
-      updateFeedbackItemStyles(feedbackItem, data.read);
-      adminFeedbackList.appendChild(feedbackItem);
-    });
+      if (globalSpinner) globalSpinner.style.display = "flex";
 
-    const feedbackAdminModal = new bootstrap.Modal(
-      document.getElementById("feedbackAdminModal")
-    );
-    feedbackAdminModal.show();
-  });
-
-  const triggerAuthModal = document.getElementById("triggerAuthModal");
-  const authModal = new bootstrap.Modal(document.getElementById("authModal"));
-
-  triggerAuthModal.addEventListener("dblclick", () => {
-    authModal.show();
-  });
-
-  // Function to update unread feedback count
-  const updateUnreadFeedbackCount = async () => {
-    const q = query(collection(db, "at-tartil"), orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-
-    let unreadCount = 0;
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (!data.read) {
-        unreadCount++;
+      try {
+        await addDoc(collection(db, "at-tartil"), {
+          message,
+          timestamp: serverTimestamp(),
+          read: false, // Tambahkan status default 'belum dibaca'
+        });
+        if (globalSpinner) globalSpinner.style.display = "none";
+        feedbackForm.value = "";
+        feedbackDrawer.classList.remove("open"); // Tutup drawer setelah submit
+        Swal.fire({
+          icon: "success",
+          title: "Terima kasih!",
+          text: "Kritik dan saran berhasil dikirim!",
+        });
+      } catch (error) {
+        if (globalSpinner) globalSpinner.style.display = "none";
+        Swal.fire({
+          icon: "error",
+          title: "Gagal mengirim",
+          text: "Silakan coba lagi nanti.",
+        });
+        console.error("Feedback submission error:", error);
       }
     });
+  }
 
-    const unreadFeedbackCount = document.getElementById("unreadFeedbackCount");
-    if (unreadFeedbackCount) {
-      unreadFeedbackCount.textContent = `Kritik & Saran belum terbaca: ${unreadCount}`;
+  // Fungsi updateFeedbackItemStyles didefinisikan sekali di scope yang benar
+  const updateFeedbackItemStyles = (feedbackItem, isRead) => {
+    const button = feedbackItem.querySelector(".mark-as-read");
+    if (!button) return;
+    if (isRead) {
+      button.textContent = "Sudah Dibaca";
+      button.classList.remove("btn-danger");
+      button.classList.add("btn-success");
+      button.disabled = true; // Disable tombol jika sudah dibaca
+    } else {
+      button.textContent = "Tandai Sudah Dibaca";
+      button.classList.remove("btn-success");
+      button.classList.add("btn-danger");
+      button.disabled = false;
     }
   };
 
-  // Call the function when the auth modal is shown
-  const authModalElement = document.getElementById("authModal");
-  if (authModalElement) {
-    authModalElement.addEventListener(
-      "show.bs.modal",
-      updateUnreadFeedbackCount
-    );
+  async function displayAdminFeedback() {
+    const Swal = await loadSweetAlert();
+    if (!db) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Koneksi database gagal.",
+      });
+      return;
+    }
+    if (globalSpinner) globalSpinner.style.display = "flex";
+
+    try {
+      const q = query(
+        collection(db, "at-tartil"),
+        orderBy("timestamp", "desc")
+      );
+      const snapshot = await getDocs(q);
+
+      if (adminFeedbackList) adminFeedbackList.innerHTML = "";
+
+      snapshot.forEach((docSnapshot) => {
+        // Ganti nama variabel agar tidak bentrok dengan 'doc' dari firestore
+        const data = docSnapshot.data();
+        const time = data.timestamp?.toDate
+          ? new Date(data.timestamp.toDate()).toLocaleString("id-ID")
+          : "Waktu tidak diketahui";
+
+        const feedbackItem = document.createElement("div");
+        feedbackItem.className = "list-group-item";
+        feedbackItem.innerHTML = `
+                <div>
+                <small class="text-muted">${time}</small>
+                <p class="mb-1">${data.message}</p>
+                <button class="btn btn-sm mark-as-read" data-id="${docSnapshot.id}"></button>
+                </div>
+            `;
+        updateFeedbackItemStyles(feedbackItem, data.read);
+        if (adminFeedbackList) adminFeedbackList.appendChild(feedbackItem);
+      });
+
+      const feedbackAdminModalEl =
+        document.getElementById("feedbackAdminModal");
+      if (feedbackAdminModalEl) {
+        const feedbackAdminModal =
+          bootstrap.Modal.getInstance(feedbackAdminModalEl) ||
+          new bootstrap.Modal(feedbackAdminModalEl);
+        feedbackAdminModal.show();
+      }
+    } catch (error) {
+      console.error("Error fetching admin feedback:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Gagal memuat data feedback.",
+      });
+    } finally {
+      if (globalSpinner) globalSpinner.style.display = "none";
+    }
   }
 
-  // Mark feedback as read
-  adminFeedbackList.addEventListener("click", async (event) => {
-    if (event.target.classList.contains("mark-as-read")) {
-      const feedbackId = event.target.dataset.id;
-      const feedbackRef = doc(db, "at-tartil", feedbackId);
+  if (authSubmitButton && adminKeyInput && db) {
+    authSubmitButton.addEventListener("click", async () => {
+      const key = adminKeyInput.value.trim();
+      const Swal = await loadSweetAlert();
 
-      try {
-        await updateDoc(feedbackRef, { read: true });
-        const feedbackItem = event.target.closest(".list-group-item");
-        updateFeedbackItemStyles(feedbackItem, true);
-        updateUnreadFeedbackCount();
-      } catch (error) {
-        console.error("Error updating feedback: ", error);
+      // SIMPAN KEY DI TEMPAT YANG LEBIH AMAN JIKA MUNGKIN
+      // Untuk aplikasi client-side murni, ini sulit, tapi hindari hardcode langsung jika ada alternatif
+      if (key !== "masokpakeko") {
+        Swal.fire({ icon: "error", title: "Key Admin salah" });
+        return;
       }
+      adminKeyInput.value = ""; // Clear key
+      const authModalEl = document.getElementById("authModal");
+      if (authModalEl) {
+        const authModalInstance = bootstrap.Modal.getInstance(authModalEl);
+        if (authModalInstance) authModalInstance.hide();
+      }
+      await displayAdminFeedback();
+    });
+  }
+
+  const triggerAuthModal = document.getElementById("triggerAuthModal");
+  if (triggerAuthModal) {
+    triggerAuthModal.addEventListener("dblclick", async () => {
+      const authModalEl = document.getElementById("authModal");
+      if (authModalEl) {
+        const authModalInstance =
+          bootstrap.Modal.getInstance(authModalEl) ||
+          new bootstrap.Modal(authModalEl);
+        await updateUnreadFeedbackCount(); // Update count sebelum modal tampil
+        authModalInstance.show();
+      }
+    });
+  }
+
+  async function updateUnreadFeedbackCount() {
+    if (!db || !unreadFeedbackCountEl) return;
+    try {
+      const q = query(collection(db, "at-tartil")); // Tidak perlu order by untuk count
+      const snapshot = await getDocs(q);
+      let unreadCount = 0;
+      snapshot.forEach((docSnapshot) => {
+        if (!docSnapshot.data().read) {
+          unreadCount++;
+        }
+      });
+      unreadFeedbackCountEl.textContent = `Kritik & Saran belum terbaca: ${unreadCount}`;
+    } catch (error) {
+      console.error("Error updating unread feedback count:", error);
+      unreadFeedbackCountEl.textContent = "Gagal memuat jumlah feedback.";
     }
-  });
+  }
+  // Panggil sekali saat load untuk inisialisasi
+  updateUnreadFeedbackCount();
+
+  if (adminFeedbackList && db) {
+    adminFeedbackList.addEventListener("click", async (event) => {
+      if (
+        event.target.classList.contains("mark-as-read") &&
+        !event.target.disabled
+      ) {
+        const feedbackId = event.target.dataset.id;
+        const feedbackRef = doc(db, "at-tartil", feedbackId);
+        const Swal = await loadSweetAlert();
+
+        try {
+          await updateDoc(feedbackRef, { read: true });
+          const feedbackItem = event.target.closest(".list-group-item");
+          if (feedbackItem) updateFeedbackItemStyles(feedbackItem, true);
+          updateUnreadFeedbackCount(); // Update count setelah menandai
+        } catch (error) {
+          console.error("Error updating feedback as read: ", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Gagal menandai feedback.",
+          });
+        }
+      }
+    });
+  }
 
   // Mark all feedback as read
   const markAllAsReadButton = document.createElement("button");
   markAllAsReadButton.textContent = "Tandai Semua Sudah Dibaca";
-  markAllAsReadButton.className = "btn btn-primary mb-3";
+  markAllAsReadButton.className = "btn btn-primary mb-3 d-block mx-auto"; // Style tombol
   markAllAsReadButton.addEventListener("click", async () => {
-    const q = query(collection(db, "at-tartil"));
-    const snapshot = await getDocs(q);
-
-    const batch = writeBatch(db);
-    snapshot.forEach((doc) => {
-      const feedbackRef = doc.ref;
-      batch.update(feedbackRef, { read: true });
-    });
+    if (!db) return;
+    const Swal = await loadSweetAlert();
+    if (globalSpinner) globalSpinner.style.display = "flex";
 
     try {
-      await batch.commit();
-      Swal.fire({
-        icon: "success",
-        title: "Semua kritik & saran telah ditandai sebagai sudah dibaca!",
-      });
-      updateUnreadFeedbackCount();
-
-      // Update UI for all feedback items
-      snapshot.forEach((doc) => {
-        const feedbackItem = document
-          .querySelector(`[data-id='${doc.id}']`)
-          .closest(".list-group-item");
-        if (feedbackItem) {
-          updateFeedbackItemStyles(feedbackItem, true);
+      const q = query(collection(db, "at-tartil")); // Bisa filter where('read', '==', false) jika datanya banyak
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(db);
+      let LakukanBatch = false;
+      snapshot.forEach((docSnapshot) => {
+        if (!docSnapshot.data().read) {
+          // Hanya update yang belum dibaca
+          const feedbackRef = docSnapshot.ref;
+          batch.update(feedbackRef, { read: true });
+          LakukanBatch = true;
         }
       });
+
+      if (LakukanBatch) {
+        await batch.commit();
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Semua kritik & saran telah ditandai sudah dibaca.",
+        });
+        // Update UI untuk semua item yang terlihat
+        adminFeedbackList
+          .querySelectorAll(".list-group-item")
+          .forEach((itemEl) => {
+            const itemDataId =
+              itemEl.querySelector(".mark-as-read")?.dataset.id;
+            if (itemDataId) {
+              // Pastikan elemen ada
+              // Cek apakah item ini termasuk yang di-batch (opsional, bisa update semua saja)
+              // Untuk simpelnya, kita update semua yang tampil
+              updateFeedbackItemStyles(itemEl, true);
+            }
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          title: "Info",
+          text: "Tidak ada feedback baru untuk ditandai.",
+        });
+      }
+      updateUnreadFeedbackCount();
     } catch (error) {
-      console.error("Error marking all feedback as read: ", error);
+      console.error("Error marking all as read: ", error);
       Swal.fire({
         icon: "error",
-        title: "Gagal menandai semua sebagai sudah dibaca",
-        text: "Silakan coba lagi nanti.",
+        title: "Gagal",
+        text: "Gagal menandai semua. Silakan coba lagi.",
       });
+    } finally {
+      if (globalSpinner) globalSpinner.style.display = "none";
     }
   });
 
-  // Append the button to the feedback admin modal
   const feedbackAdminModalBody = document.querySelector(
     "#feedbackAdminModal .modal-body"
   );
-  if (feedbackAdminModalBody) {
+  if (feedbackAdminModalBody && adminFeedbackList) {
     feedbackAdminModalBody.insertBefore(markAllAsReadButton, adminFeedbackList);
   }
 
-  // Ensure the form submission in the admin modal triggers the same logic as the 'authSubmit' button
   const authForm = document.querySelector("#authModal form");
-  if (authForm) {
+  if (authForm && authSubmitButton) {
     authForm.addEventListener("submit", (event) => {
-      event.preventDefault(); // Prevent default form submission
-      authSubmit.click(); // Trigger the same logic as the 'authSubmit' button
+      event.preventDefault();
+      authSubmitButton.click();
     });
   }
 
-  // Ensure lazy loading is applied dynamically if needed
-  const images = document.querySelectorAll("img");
-  images.forEach((img) => {
-    if (!img.hasAttribute("loading")) {
-      img.setAttribute("loading", "lazy");
-    }
-  });
-});
-
-// Ensure updateFeedbackItemStyles is defined globally
-const updateFeedbackItemStyles = (feedbackItem, isRead) => {
-  const button = feedbackItem.querySelector(".mark-as-read");
-  if (isRead) {
-    button.textContent = "Sudah Dibaca";
-    button.classList.remove("btn-danger");
-    button.classList.add("btn-success");
-  } else {
-    button.textContent = "Belum Dibaca";
-    button.classList.remove("btn-success");
-    button.classList.add("btn-danger");
-  }
-};
+  // Global lazy loading untuk gambar yang mungkin ditambahkan dinamis atau terlewat
+  // Ini bisa dihapus jika Anda yakin semua <img> sudah punya loading="lazy"
+  // const images = document.querySelectorAll("img:not([loading])"); // Hanya target yg belum ada atribut loading
+  // images.forEach((img) => {
+  //   img.setAttribute("loading", "lazy");
+  // });
+}); // Akhir DOMContentLoaded

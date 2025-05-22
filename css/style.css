@@ -18,6 +18,7 @@ body {
   position: relative;
   font-family: sans-serif;
 }
+
 .bubble {
   position: fixed;
   bottom: -200px;
