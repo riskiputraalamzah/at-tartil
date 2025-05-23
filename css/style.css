@@ -311,13 +311,11 @@ textarea.form-control:focus {
   }
 }
 
-/*
-
+/* blocked touch user event */
 img {
-  pointer-events: none; /* Mencegah drag and drop gambar 
-  user-select: none; /* Mencegah teks atau elemen gambar dipilih 
+  pointer-events: none;
+  user-select: none;
 }
-*/
 
 /* Overlay transparan untuk mencegah klik langsung pada gambar */
 .image-overlay {
