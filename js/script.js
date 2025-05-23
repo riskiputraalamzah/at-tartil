@@ -16,9 +16,72 @@ document.addEventListener("DOMContentLoaded", () => {
   let isLoadingImageInModal = false;
   const MAX_PAGES = 36; // Definisikan jumlah halaman maksimal
 
-  if (window.ProgressiveImage) {
-    const progressiveImages = new ProgressiveImage();
-    progressiveImages.init();
+  // BARU: Variabel untuk deteksi swipe
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let isSwiping = false; // Untuk memastikan touchend tidak diproses jika touchstart tidak diawali pada gambar
+  const SWIPE_THRESHOLD = 50;
+
+  // ...
+
+  // BARU: Fungsi untuk menangani awal sentuhan
+  function handleTouchStart(event) {
+    // Hanya proses sentuhan pertama jika ada multiple touches
+    if (event.touches.length === 1) {
+      touchStartX = event.changedTouches[0].clientX; // Menggunakan clientX untuk konsistensi
+      isSwiping = true; // Tandai bahwa swipe dimulai dari elemen ini
+      console.log("handleTouchStart triggered. StartX:", touchStartX);
+    }
+  }
+
+  // BARU: Fungsi untuk menangani akhir sentuhan
+  function handleTouchEnd(event) {
+    if (!isSwiping || event.changedTouches.length !== 1) {
+      // Jika swipe tidak dimulai dari sini atau ada multiple touches, abaikan
+      isSwiping = false;
+      return;
+    }
+
+    touchEndX = event.changedTouches[0].clientX; // Menggunakan clientX
+    console.log("handleTouchEnd triggered. EndX:", touchEndX);
+
+    if (isLoadingImageInModal) {
+      console.log("Image is loading, swipe ignored.");
+      isSwiping = false;
+      return;
+    }
+    handleSwipeGesture();
+    isSwiping = false; // Reset setelah proses swipe
+  }
+
+  // BARU: Fungsi untuk memproses gestur swipe
+  function handleSwipeGesture() {
+    const deltaX = touchEndX - touchStartX;
+    console.log(
+      "handleSwipeGesture. DeltaX:",
+      deltaX,
+      "Threshold:",
+      SWIPE_THRESHOLD
+    );
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) {
+      console.log("Swipe distance too short.");
+      return; // Swipe tidak cukup jauh
+    }
+
+    if (deltaX > 0) {
+      // Jari bergerak dari kiri ke kanan
+      console.log("Swipe Right Detected -> goToPrevPage");
+      goToPrevPage();
+    } else {
+      // Jari bergerak dari kanan ke kiri
+      console.log("Swipe Left Detected -> goToNextPage");
+      goToNextPage();
+    }
+
+    // Reset nilai tidak perlu di sini karena sudah dihandle oleh isSwiping
+    // touchStartX = 0;
+    // touchEndX = 0;
   }
 
   modalElement.addEventListener("show.bs.modal", (event) => {
@@ -28,8 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPage = 0;
     if (pageSelector) pageSelector.value = currentPage;
     updateImage();
-    // Tambahkan event listener untuk navigasi keyboard saat modal terbuka
     document.addEventListener("keydown", handleModalKeyNavigation);
+
+    // BARU: Tambahkan event listener untuk swipe pada gambar di dalam modal
+    // Gunakan { passive: true } untuk performa yang lebih baik jika tidak memanggil preventDefault() di handler
+    currentImage.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    currentImage.addEventListener("touchend", handleTouchEnd, {
+      passive: true,
+    });
   });
 
   modalElement.addEventListener("hidden.bs.modal", () => {
@@ -40,9 +111,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (existingSpinner) existingSpinner.remove();
     if (currentImage) currentImage.classList.remove("hidden");
     currentImage.src = "";
-    // Hapus event listener keyboard saat modal ditutup
     document.removeEventListener("keydown", handleModalKeyNavigation);
-    // Jika keluar dari fullscreen saat modal ditutup
+
+    // BARU: Hapus event listener swipe saat modal ditutup
+    currentImage.removeEventListener("touchstart", handleTouchStart);
+    currentImage.removeEventListener("touchend", handleTouchEnd);
+
     if (document.fullscreenElement) {
       document
         .exitFullscreen()
@@ -116,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (spinnerDiv && spinnerDiv.parentNode) spinnerDiv.remove();
       currentImage.classList.remove("hidden");
       isLoadingImageInModal = false;
-      if (prevPageButton) prevPageButton.disabled = false; // Atau sesuaikan dengan logika error
+      if (prevPageButton) prevPageButton.disabled = false;
       if (nextPageButton) nextPageButton.disabled = false;
       if (pageSelector) pageSelector.disabled = false;
     };
@@ -125,10 +199,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tempImg.onerror = loadError;
     setTimeout(() => {
       tempImg.src = imageUrl;
-    }, 200); // Beri sedikit waktu untuk fade out & spinner muncul
+    }, 200);
   };
 
-  // --- FUNGSI NAVIGASI ---
   function goToPrevPage() {
     if (isLoadingImageInModal) return;
     if (currentPage > 0) {
@@ -146,7 +219,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateImage();
     }
   }
-  // --- AKHIR FUNGSI NAVIGASI ---
 
   if (prevPageButton) {
     prevPageButton.addEventListener("click", goToPrevPage);
@@ -164,16 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- LOGIKA FULLSCREEN DAN NAVIGASI FULLSCREEN ---
   if (fullscreenToggle) {
     fullscreenToggle.addEventListener("click", () => {
       if (!document.fullscreenElement) {
         if (currentImage.requestFullscreen) {
           currentImage
             .requestFullscreen()
-            .then(() => {
-              // Anda bisa menambahkan logika khusus saat berhasil masuk fullscreen di sini jika perlu
-            })
             .catch((err) => console.error(`Fullscreen error: ${err.message}`));
         } else {
           console.warn(
@@ -192,17 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Event listener untuk perubahan status fullscreen (masuk/keluar)
   document.addEventListener("fullscreenchange", () => {
     if (document.fullscreenElement === currentImage) {
       console.log("Entered fullscreen for currentImage.");
-      console.log("Fullscreen element:", document.fullscreenElement);
-      document.fullscreenElement.addEventListener(
-        "mousemove",
-        handleFullscreenMouseMove
-      );
-      // Tambahkan kursor custom atau styling jika perlu saat fullscreen
-      // currentImage.style.cursor = "pointer"; // Contoh sederhana
+      currentImage.addEventListener("mousemove", handleFullscreenMouseMove);
     } else {
       console.log("Exited fullscreen.");
       currentImage.removeEventListener("mousemove", handleFullscreenMouseMove);
@@ -214,105 +275,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Navigasi dengan klik pada gambar saat fullscreen
   currentImage.addEventListener("click", (event) => {
     if (document.fullscreenElement === currentImage) {
+      // Cek agar tidak konflik dengan swipe, mungkin bisa ditambahkan delay
+      // atau pastikan ini hanya untuk tap, bukan drag
+      // Untuk saat ini, kita asumsikan swipe handler tidak mencegah click event
+      // jika swipe tidak terdeteksi (misal, deltaX < SWIPE_THRESHOLD).
       const imageWidth = currentImage.offsetWidth;
-      const clickX = event.offsetX; // Posisi X klik relatif terhadap elemen gambar
+      const clickX = event.offsetX;
 
       if (clickX < imageWidth / 2) {
-        // Klik di sisi kiri
         goToPrevPage();
       } else {
-        // Klik di sisi kanan
         goToNextPage();
       }
     }
   });
 
-  // Navigasi dengan keyboard (panah kiri/kanan) saat gambar fullscreen ATAU modal aktif
-  // Fungsi ini akan dipanggil oleh dua event listener terpisah
   function handleGlobalKeyNavigation(event) {
-    // Cek apakah modal At-Tartil sedang aktif DAN gambar sedang tidak loading
     const isModalActive = modalElement.classList.contains("show");
-
     if (isLoadingImageInModal) return;
 
     if (document.fullscreenElement === currentImage) {
-      // Jika sedang fullscreen
       if (event.key === "ArrowLeft") {
         goToPrevPage();
-        event.preventDefault(); // Mencegah scroll halaman jika ada
+        console.log("ArrowLeft pressed");
+        event.preventDefault();
       } else if (event.key === "ArrowRight") {
+        console.log("ArrowRight pressed");
         goToNextPage();
         event.preventDefault();
       }
-      // Tombol Escape sudah ditangani browser untuk keluar fullscreen
     } else if (isModalActive) {
-      // Jika modal aktif tapi tidak fullscreen
-      if (event.key === "ArrowLeft") {
-        goToPrevPage();
-        event.preventDefault();
-      } else if (event.key === "ArrowRight") {
-        goToNextPage();
-        event.preventDefault();
-      }
+      // Ini akan di-handle oleh handleModalKeyNavigation
+      // Jadi, bisa kita skip atau pastikan tidak ada duplikasi
     }
   }
-  // Event listener global untuk keyboard
   document.addEventListener("keydown", handleGlobalKeyNavigation);
 
-  // Fungsi terpisah untuk navigasi keyboard khusus saat modal saja (jika ingin perilaku berbeda)
-  // Ini dipanggil saat modal 'show' dan dihapus saat 'hidden'
-  // Anda bisa memilih untuk menggunakan handleGlobalKeyNavigation atau yang ini + modifikasi
-  // Untuk saat ini, handleGlobalKeyNavigation sudah mencakup kedua kasus.
   function handleModalKeyNavigation(event) {
-    if (isLoadingImageInModal || document.fullscreenElement === currentImage)
-      return; // Jangan jalankan jika fullscreen (sudah ditangani)
+    // MODIFIKASI: Pastikan modal aktif dan tidak dalam mode fullscreen (karena fullscreen ditangani global)
+    if (
+      isLoadingImageInModal ||
+      document.fullscreenElement === currentImage ||
+      !modalElement.classList.contains("show")
+    )
+      return;
 
     if (event.key === "ArrowLeft") {
       goToPrevPage();
+      console.log("ArrowLeft pressed");
       event.preventDefault();
     } else if (event.key === "ArrowRight") {
+      console.log("ArrowRight pressed");
       goToNextPage();
       event.preventDefault();
     }
   }
-  // ... di dalam 'fullscreenchange' atau event 'mousemove' pada currentImage saat fullscreen
-  // if (document.fullscreenElement === currentImage) {
-  //   currentImage.addEventListener("mousemove", handleFullscreenMouseMove);
-  // } else {
-  //   currentImage.removeEventListener("mousemove", handleFullscreenMouseMove);
-  //   currentImage.classList.remove(
-  //     "fullscreen-nav-left",
-  //     "fullscreen-nav-right"
-  //   );
-  //   currentImage.style.cursor = "";
-  // }
 
   function handleFullscreenMouseMove(event) {
     if (document.fullscreenElement !== currentImage) return;
-    console.log("Mouse moved in fullscreen");
     const imageWidth = currentImage.offsetWidth;
-    const clickX = event.offsetX;
+    const moveX = event.offsetX; // Menggunakan offsetX karena relatif terhadap elemen gambar
     currentImage.classList.remove(
       "fullscreen-nav-left",
       "fullscreen-nav-right"
-    ); // Reset
-    if (clickX < imageWidth / 3) {
-      // Zona kiri
-      // currentImage.style.cursor = 'w-resize'; // Atau
+    );
+    if (moveX < imageWidth / 3) {
       currentImage.classList.add("fullscreen-nav-left");
-    } else if (clickX > (imageWidth * 2) / 3) {
-      // Zona kanan
-      // currentImage.style.cursor = 'e-resize'; // Atau
+    } else if (moveX > (imageWidth * 2) / 3) {
       currentImage.classList.add("fullscreen-nav-right");
-    } else {
-      // currentImage.style.cursor = 'default';
     }
   }
-
-  // --- AKHIR LOGIKA FULLSCREEN ---
 
   const dynamicYearEl = document.getElementById("dynamicYear");
   if (dynamicYearEl) {
@@ -323,4 +357,4 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `${startYear}`
         : `${startYear} - ${currentYear}`;
   }
-}); // Akhir DOMContentLoaded
+});
