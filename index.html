@@ -58,7 +58,7 @@
     <!-- <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" /> -->
     <link rel="stylesheet" href="css/style.css" />
     <!-- Pastikan style.css ini diminify -->
-    <link rel="manifest" href="manifest.json" />
+    <!-- <link rel="manifest" href="manifest.json" /> -->
   </head>
   <body class="bg-light">
     <!-- Spinner utama untuk loading halaman (opsional, bisa di-enable jika dirasa perlu) -->
@@ -118,10 +118,10 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil1/cover.png" class="progressive replace">
+            <a href="img/tartil1/cover.webp" class="progressive replace">
               <img
-                src="img/tartil1/cover.png"
-                data-progressive="img/tartil1/cover.png"
+                src="img/tartil1/cover.webp"
+                data-progressive="img/tartil1/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 1"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -141,9 +141,9 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil2/cover.png" class="progressive replace">
+            <a href="img/tartil2/cover.webp" class="progressive replace">
               <img
-                src="img/tartil2/cover.png"
+                src="img/tartil2/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 2"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -162,9 +162,9 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil3/cover.png" class="progressive replace">
+            <a href="img/tartil3/cover.webp" class="progressive replace">
               <img
-                src="img/tartil3/cover.png"
+                src="img/tartil3/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 3"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -183,9 +183,9 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil4/cover.png" class="progressive replace">
+            <a href="img/tartil4/cover.webp" class="progressive replace">
               <img
-                src="img/tartil4/cover.png"
+                src="img/tartil4/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 4"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -204,9 +204,9 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil5/cover.png" class="progressive replace">
+            <a href="img/tartil5/cover.webp" class="progressive replace">
               <img
-                src="img/tartil5/cover.png"
+                src="img/tartil5/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 5"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -225,9 +225,9 @@
             data-bs-target="#tartilModal"
             style="cursor: pointer"
           >
-            <a href="img/tartil6/cover.png" class="progressive replace">
+            <a href="img/tartil6/cover.webp" class="progressive replace">
               <img
-                src="img/tartil6/cover.png"
+                src="img/tartil6/cover.webp"
                 class="img-fluid preview"
                 alt="Cover Tartil 6"
                 style="width: 100%; height: auto; object-fit: cover"
@@ -264,13 +264,9 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="text-center position-relative" style="height: 65vh">
+            <div class="text-center position-relative parent-current-image">
               <!-- Spinner akan ditambahkan oleh JS -->
-              <img
-                id="currentImage"
-                class="img-fluid rounded"
-                alt="Halaman At-Tartil"
-              />
+              <img id="currentImage" class="rounded" alt="Halaman At-Tartil" />
             </div>
             <div class="mt-3 text-center">
               <label for="pageSelector">Pilih Halaman:</label>
@@ -437,22 +433,22 @@
       // }
 
       // Service Worker Registration
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          // Daftarkan SW setelah halaman utama load
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then((registration) => {
-              console.log(
-                "Service Worker registered with scope:",
-                registration.scope
-              );
-            })
-            .catch((error) => {
-              console.error("Service Worker registration failed:", error);
-            });
-        });
-      }
+      // if ("serviceWorker" in navigator) {
+      //   window.addEventListener("load", () => {
+      //     // Daftarkan SW setelah halaman utama load
+      //     navigator.serviceWorker
+      //       .register("/service-worker.js")
+      //       .then((registration) => {
+      //         console.log(
+      //           "Service Worker registered with scope:",
+      //           registration.scope
+      //         );
+      //       })
+      //       .catch((error) => {
+      //         console.error("Service Worker registration failed:", error);
+      //       });
+      //   });
+      // }
     </script>
   </body>
 </html>

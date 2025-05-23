@@ -6,11 +6,14 @@
 html {
   scroll-behavior: smooth !important;
 }
+.parent-current-image {
+  height: calc(100vh - 220px);
+}
 /* CSS untuk spinner di modal gambar */
 #currentImage {
-  max-width: 80%;
+  max-width: 100%;
   transition: opacity 0.5s ease-in-out; /* Anda sudah punya ini, bagus! */
-  height: 65vh;
+  height: 100%; /* Mengurangi tinggi untuk memberi ruang pada konten lain */
   object-fit: contain;
 }
 
@@ -178,17 +181,6 @@ body footer {
 .loading-overlay .spinner-border {
   width: 3rem;
   height: 3rem;
-}
-
-#currentImage {
-  max-width: 80%;
-  transition: opacity 0.5s ease-in-out;
-  height: 65vh;
-  object-fit: contain;
-}
-
-#currentImage.hidden {
-  opacity: 0;
 }
 
 #loadingOverlay {

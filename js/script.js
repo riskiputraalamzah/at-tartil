@@ -94,7 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentImage.parentElement.appendChild(spinnerDiv);
 
     const pagePath = currentPage === 0 ? "cover" : currentPage;
-    const imageUrl = `img/tartil${currentTartil}/${pagePath}.png`;
+    const ext = currentPage === 0 ? "webp" : "png";
+    const imageUrl = `img/tartil${currentTartil}/${pagePath}.${ext}`;
     const tempImg = new Image();
 
     const loadSuccess = () => {
