@@ -1,60 +1,59 @@
 // service-worker.js
 
-const CACHE_NAME = "at-tartil-cache-v2"; // Naikkan versi jika ada perubahan pada daftar cache atau logika SW
+const CACHE_NAME = "at-tartil-cache-v4"; // Naikkan versi!
 const CORE_APP_SHELL_URLS = [
-  "/", // Alias untuk index.html di root, penting untuk start_url
+  "/",
   "/index.html",
-  "/manifest.json", // Cache manifest file
+  "/manifest.json",
   "/css/style.css",
   "/js/script.js",
-  "/js/firebase.js",
-  "/img/logo.png", // Dari manifest.json
+  "/img/logo.png",
+  "/img/bg5.png",
   "/img/feedback.png",
-  "/img/offline-placeholder.png", // Sediakan gambar ini sebagai fallback jika gambar lain gagal load offline
+  "/img/offline-placeholder.png",
 ];
 
-const TARTIL_COUNT = 6;
-const MAX_PAGES_PER_TARTIL = 36; // Sesuai dengan MAX_PAGES di script.js Anda
+// --- Konfigurasi untuk Pre-caching ---
+const TARTIL_TO_PRECACHE = [1]; // Hanya Jilid 1 yang di-precache
+const MAX_PAGES_PER_TARTIL = 36;
 
-function generateTartilImageUrls() {
-  const tartilImageUrls = [];
-  for (let i = 1; i <= TARTIL_COUNT; i++) {
-    tartilImageUrls.push(`/img/tartil${i}/cover.png`);
+function generatePrecacheImageUrls() {
+  const imageUrls = [];
+  TARTIL_TO_PRECACHE.forEach((tartilNum) => {
+    imageUrls.push(`/img/tartil${tartilNum}/cover.png`);
     for (let j = 1; j <= MAX_PAGES_PER_TARTIL; j++) {
-      tartilImageUrls.push(`/img/tartil${i}/${j}.png`);
+      imageUrls.push(`/img/tartil${tartilNum}/${j}.png`);
     }
-  }
-  return tartilImageUrls;
+  });
+  return imageUrls;
 }
 
-const ALL_URLS_TO_CACHE = [
+const URLS_TO_PRECACHE = [
   ...CORE_APP_SHELL_URLS,
-  ...generateTartilImageUrls(),
+  ...generatePrecacheImageUrls(),
 ];
 
-// Install service worker dan cache file
+// Total jilid untuk logika runtime caching jika diperlukan (meskipun tidak eksplisit dipakai di fetch di bawah)
+const TOTAL_TARTIL_COUNT = 6;
+
+// Install service worker
 self.addEventListener("install", (event) => {
   console.log("[Service Worker] Install event");
-  self.skipWaiting(); // Agar worker langsung aktif dan menggantikan yang lama
+  self.skipWaiting();
 
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) => {
         console.log(
-          `[Service Worker] Caching ${ALL_URLS_TO_CACHE.length} files: App Shell and Tartil images`
+          `[Service Worker] Pre-caching ${
+            URLS_TO_PRECACHE.length
+          } files: App Shell and Tartil Jilid ${TARTIL_TO_PRECACHE.join(", ")}`
         );
-        // Menggunakan addAll akan gagal jika salah satu URL gagal.
-        // Ini baik untuk memastikan semua aset penting ter-cache.
-        return cache.addAll(ALL_URLS_TO_CACHE);
+        return cache.addAll(URLS_TO_PRECACHE);
       })
       .catch((err) => {
-        console.error(
-          "[Service Worker] Gagal melakukan pre-caching saat install:",
-          err
-        );
-        // Anda mungkin ingin menangani ini lebih lanjut,
-        // tapi biasanya jika precache gagal, instalasi SW juga gagal.
+        console.error("[Service Worker] Gagal pre-caching saat install:", err);
       })
   );
 });
@@ -77,20 +76,20 @@ self.addEventListener("activate", (event) => {
       )
       .then(() => {
         console.log("[Service Worker] Claiming clients");
-        return self.clients.claim(); // Pastikan SW baru mengontrol semua klien terbuka segera
+        return self.clients.claim();
       })
   );
 });
 
-// Fetch: strategi Cache-First, lalu Network dengan fallback dan runtime caching
+// Fetch: strategi caching
 self.addEventListener("fetch", (event) => {
-  // Hanya tangani request GET
   if (event.request.method !== "GET") {
     return;
   }
 
-  // Strategi untuk navigasi HTML (App Shell)
-  // Network-first untuk halaman HTML agar pengguna selalu mendapatkan versi terbaru jika online
+  const url = new URL(event.request.url);
+
+  // Strategi untuk navigasi HTML (App Shell) - Network-first
   if (
     event.request.mode === "navigate" ||
     event.request.destination === "document"
@@ -98,7 +97,6 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          // Jika berhasil dari network, simpan ke cache dan kembalikan
           if (networkResponse.ok) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -108,10 +106,7 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // Jika network gagal (offline), ambil dari cache
           return caches.match(event.request).then((cachedResponse) => {
-            // Jika request spesifik ada di cache, gunakan itu.
-            // Jika tidak (misalnya, URL dengan parameter), fallback ke index.html utama.
             return cachedResponse || caches.match("/index.html");
           });
         })
@@ -119,33 +114,35 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Strategi Cache-First untuk aset lain (CSS, JS, Gambar)
+  // Strategi Cache-First dengan Runtime Caching untuk aset lain (CSS, JS, Gambar)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // console.log("[Service Worker] Serving from cache:", event.request.url);
         return cachedResponse;
       }
 
-      // Jika tidak ada di cache, ambil dari network
-      // console.log("[Service Worker] Fetching from network:", event.request.url);
       return fetch(event.request)
         .then((networkResponse) => {
-          // Periksa apakah response valid sebelum di-cache
-          // 'basic' untuk same-origin. 'cors' untuk cross-origin jika diperlukan.
           if (
             !networkResponse ||
             networkResponse.status !== 200 ||
             (networkResponse.type !== "basic" &&
               networkResponse.type !== "cors")
           ) {
-            return networkResponse; // Jangan cache response yang tidak valid atau opaque
+            return networkResponse;
           }
 
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            // console.log("[Service Worker] Caching new resource from network:", event.request.url);
-            cache.put(event.request, responseToCache);
+            // Hanya cache jika itu adalah request yang berhasil dan berasal dari domain kita atau CORS yang valid
+            // Ini akan otomatis meng-cache gambar Tartil Jilid 2-6 saat pertama kali diakses
+            if (
+              url.origin === self.location.origin ||
+              networkResponse.type === "cors"
+            ) {
+              // console.log("[Service Worker] Runtime caching new resource from network:", event.request.url);
+              cache.put(event.request, responseToCache);
+            }
           });
           return networkResponse;
         })
@@ -155,19 +152,15 @@ self.addEventListener("fetch", (event) => {
             event.request.url,
             error
           );
-          // Fallback jika fetch gagal (misal, offline dan tidak ada di cache)
           if (event.request.destination === "image") {
             return caches
               .match("/img/offline-placeholder.png")
               .then((response) => {
                 if (response) return response;
-                // Jika placeholder pun tidak ada, throw error agar browser handle
                 console.error("Offline placeholder image not found in cache.");
                 throw error;
               });
           }
-          // Untuk jenis request lain yang tidak ada fallbacknya, biarkan error network standar
-          // atau throw error agar promise di-reject.
           throw error;
         });
     })
