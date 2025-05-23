@@ -33,11 +33,7 @@ body {
   padding: 0;
 
   color: #fff;
-  background: linear-gradient(
-    to bottom,
-    #56ab2f,
-    #a8e063
-  ); /* kombinasi hijau */
+  background: linear-gradient(to right, #56ab2f, #a8e063); /* kombinasi hijau */
   /* overflow: hidden; */
   overflow-x: hidden;
   position: relative;
