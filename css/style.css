@@ -3,6 +3,28 @@
   padding: 0;
   box-sizing: border-box;
 }
+html {
+  scroll-behavior: smooth !important;
+}
+/* CSS untuk spinner di modal gambar */
+#currentImage {
+  max-width: 80%;
+  transition: opacity 0.5s ease-in-out; /* Anda sudah punya ini, bagus! */
+  height: 65vh;
+  object-fit: contain;
+}
+
+#currentImage.hidden {
+  opacity: 0; /* Anda sudah punya ini, ini yang akan kita gunakan untuk fade out */
+}
+/* CSS untuk spinner di modal gambar */
+.image-loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10; /* Pastikan di atas gambar, tapi di bawah konten modal lain jika perlu */
+}
 body {
   margin: 0;
   padding: 0;
@@ -303,4 +325,16 @@ img {
   height: 100%;
   background: rgba(255, 255, 255, 0);
   z-index: 1;
+}
+/* Di file style.css Anda */
+#currentImage:fullscreen {
+  cursor: default; /* Atau none jika ingin kontrol penuh via JS */
+}
+
+/* Jika ingin indikator panah kiri/kanan yang lebih jelas */
+#currentImage.fullscreen-nav-left:fullscreen {
+  cursor: url("../img/left.jpg"), w-resize !important; /* Sediakan file kursor .cur atau .png */
+}
+#currentImage.fullscreen-nav-right:fullscreen {
+  cursor: url("../img/right.jpg"), e-resize !important;
 }
