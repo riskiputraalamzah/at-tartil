@@ -33,8 +33,16 @@ body {
   padding: 0;
 
   color: #fff;
-  background: linear-gradient(to right, #56ab2f, #a8e063); /* kombinasi hijau */
+  background-image: radial-gradient(
+    ellipse farthest-corner at 50% 20%,
+    /* Pusat elips agak ke atas */ #56ab2f 0%,
+    /* Warna hijau terang di pusat elips */ #2e5d18 40%,
+    /* Warna hijau lebih gelap, transisi lebih cepat */ #000000 90%
+      /* Hitam lebih cepat mendominasi di tepi */
+  );
+  /* background: linear-gradient(to right, #56ab2f, #a8e063); */
   /* overflow: hidden; */
+  background-attachment: fixed;
   overflow-x: hidden;
   position: relative;
   font-family: sans-serif;
@@ -264,6 +272,18 @@ body footer {
 @media (max-width: 768px) {
   .feedback-drawer {
     width: 100%;
+  }
+  body {
+    background-image: linear-gradient(
+      to bottom,
+      #56ab2f 0%,
+      /* Tahan warna hijau solid hingga 25% ketinggian layar */
+        /* Anda bisa sesuaikan 25% ini. Semakin besar, semakin
+                                         banyak area hijau solid di atas. */
+        #2e5d18 50%,
+      /* Transisi ke hijau yang lebih gelap */ #000000 100%
+        /* Menuju hitam di bagian bawah */
+    );
   }
 }
 
