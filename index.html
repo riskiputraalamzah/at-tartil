@@ -1,454 +1,240 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>E-Kitab At-Tartil</title>
-    <link rel="shortcut icon" href="img/og.png" type="image/x-icon" />
-    <meta name="description" content="E-Kitab At-Tartil" />
-    <meta name="author" content="Riski Putra Alamzah" />
-    <meta name="keywords" content="At-Tartil, Al-Qur'an, Materi, Belajar" />
-    <meta name="theme-color" content="#56ab2f" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="E-Kitab At-Tartil" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="msapplication-TileColor" content="#000000" />
-    <meta name="msapplication-TileImage" content="img/logo.png" />
-    <!-- Pastikan logo.png ini teroptimasi -->
-    <meta name="msapplication-config" content="img/browserconfig.xml" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@RiskiPutraAlamzah" />
-    <meta name="twitter:title" content="E-Kitab At-Tartil" />
-    <meta
-      name="twitter:description"
-      content="E-Kitab At-Tartil Jilid 1-6 Lengkap"
-    />
-    <meta name="twitter:image" content="img/logo.png" />
-    <!-- Pastikan logo.png ini teroptimasi -->
-    <meta property="og:title" content="E-Kitab At-Tartil" />
-    <meta property="og:description" content="E-Kitab At-Tartil" />
-    <meta
-      property="og:image"
-      content="https://at-tartil.riskiputraalamzah.my.id/img/og.png"
-    />
-    <!-- Pastikan og.png ini teroptimasi -->
-    <meta
-      property="og:url"
-      content="https://at-tartil.riskiputraalamzah.my.id/"
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="E-Kitab At-Tartil" />
-    <meta property="og:locale" content="id_ID" />
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Glightbox CSS dimuat nanti jika diperlukan -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/css/glightbox.min.css" rel="stylesheet" /> -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.css"
-    />
-    <!-- SweetAlert2 CSS dimuat nanti jika diperlukan -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" /> -->
-    <link rel="stylesheet" href="css/style.css" />
-    <!-- Pastikan style.css ini diminify -->
-    <!-- <link rel="manifest" href="manifest.json" /> -->
-  </head>
-  <body class="bg-light">
-    <!-- Spinner utama untuk loading halaman (opsional, bisa di-enable jika dirasa perlu) -->
-    <!-- <div id="pageLoadingOverlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;">
-        <img src="img/logo.png" alt="Logo" width="100" height="100" loading="eager" class="mb-3"/>
-        <div class="spinner-border text-light" role="status"><span class="visually-hidden">Memuat...</span></div>
-        <p class="text-light mt-2">Memuat Halaman...</p>
-    </div> -->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>E-Kitab At-Tartil | TPQ AMANAH</title>
+  <link rel="shortcut icon" href="img/og.png" type="image/x-icon" />
+  <meta name="description"
+    content="E-Kitab At-Tartil Jilid 1-6 - Belajar mengaji dengan metode At-Tartil. TPQ AMANAH Sawotratap, Gedangan, Sidoarjo." />
+  <meta name="author" content="Riski Putra Alamzah" />
+  <meta name="keywords" content="At-Tartil, Al-Qur'an, Materi, Belajar, TPQ AMANAH, Mengaji" />
+  <meta name="theme-color" content="#1B5E20" />
 
-    <div
-      id="spinner"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1050;
-        justify-content: center;
-        align-items: center;
-      "
-    >
-      <div class="spinner-border text-light" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
+  <!-- OpenGraph -->
+  <meta property="og:title" content="E-Kitab At-Tartil | TPQ AMANAH" />
+  <meta property="og:description" content="E-Kitab At-Tartil Jilid 1-6 - Belajar mengaji dengan metode At-Tartil" />
+  <meta property="og:image" content="https://at-tartil.riskiputraalamzah.my.id/img/og.png" />
+  <meta property="og:url" content="https://at-tartil.riskiputraalamzah.my.id/" />
+  <meta property="og:type" content="website" />
 
-    <div class="container py-5">
-      <div class="text-center mb-5">
-        <div
-          class="d-flex flex-md-row flex-column align-items-center justify-content-center"
-        >
-          <img
-            src="img/logo.png"
-            alt="Logo"
-            class="rounded-circle me-2"
-            width="150"
-            height="150"
-            loading="eager"
-          />
-          <div>
-            <h1 class="display-5 m-0 fw-bold text-light">E-Kitab At-Tartil</h1>
-            <p class="lead m-0">Pilih Tartil yang ingin dipelajari</p>
-          </div>
-        </div>
-      </div>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-      <div class="row justify-content-center g-4 px-3" id="tartilCards">
-        <!-- Contoh Card Tartil 1 (terapkan ke semua card) -->
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="1"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil1/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil1/cover.webp"
-                data-progressive="img/tartil1/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 1"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-        <!-- Ulangi untuk tartil 2 sampai 6, pastikan src adalah placeholder dan href/data-progressive adalah gambar full -->
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="2"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil2/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil2/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 2"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="3"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil3/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil3/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 3"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="4"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil4/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil4/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 4"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="5"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil5/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil5/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 5"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="col-6 col-md-4">
-          <div
-            class="card card-glass text-center"
-            data-tartil="6"
-            data-bs-toggle="modal"
-            data-bs-target="#tartilModal"
-            style="cursor: pointer"
-          >
-            <a href="img/tartil6/cover.webp" class="progressive replace">
-              <img
-                src="img/tartil6/cover.webp"
-                class="img-fluid preview"
-                alt="Cover Tartil 6"
-                style="width: 100%; height: auto; object-fit: cover"
-                width="300"
-                height="400"
-                loading="lazy"
-              />
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
 
-    <!-- Modal -->
-    <div
-      class="modal fade"
-      id="tartilModal"
-      tabindex="-1"
-      aria-hidden="true"
-      aria-labelledby="tartilNumLabel"
-      data-bs-theme="dark"
-    >
-      <div class="modal-dialog modal-fullscreen" role="document">
-        <div class="modal-content bg-glass">
-          <div class="modal-header">
-            <h5 class="modal-title text-white" id="tartilNumLabel">
-              At-Tartil <span id="tartilNum"></span>
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+<body>
+  <!-- App Container -->
+  <div id="app">
+
+    <!-- Book Selection View -->
+    <div id="bookSelection" class="view-selection">
+      <!-- Header -->
+      <header class="selection-header">
+        <div class="header-brand">
+          <img src="img/logo.png" alt="Logo" class="brand-logo" width="48" height="48" />
+          <div class="brand-text">
+            <h1>E-Kitab At-Tartil</h1>
+            <span>TPQ AMANAH Sawotratap</span>
           </div>
-          <div class="modal-body">
-            <div class="text-center position-relative parent-current-image">
-              <!-- Spinner akan ditambahkan oleh JS -->
-              <img id="currentImage" class="rounded" alt="Halaman At-Tartil" />
+        </div>
+        <a href="https://tpq-amanah.vercel.app/" class="btn-home" target="_blank" rel="noopener"
+          title="Kembali ke Website TPQ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <polyline points="9,22 9,12 15,12 15,22" />
+          </svg>
+          <span>Website TPQ</span>
+        </a>
+      </header>
+
+      <!-- Book Grid -->
+      <main class="selection-main">
+        <div class="selection-title">
+          <h2>Pilih Jilid At-Tartil</h2>
+          <p>Klik salah satu kitab untuk mulai membaca</p>
+        </div>
+
+        <div class="books-grid">
+          <button class="book-item" onclick="openBook(1)" aria-label="Buka At-Tartil Jilid 1">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil1/cover.webp" alt="At-Tartil Jilid 1" loading="lazy" />
+              </div>
             </div>
-            <div class="mt-3 text-center">
-              <label for="pageSelector">Pilih Halaman:</label>
-              <select
-                id="pageSelector"
-                class="form-select d-inline-block w-auto"
-              ></select>
+            <span class="book-label">Jilid 1</span>
+          </button>
+
+          <button class="book-item" onclick="openBook(2)" aria-label="Buka At-Tartil Jilid 2">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil2/cover.webp" alt="At-Tartil Jilid 2" loading="lazy" />
+              </div>
             </div>
-            <div class="mt-3 text-center">
-              <button id="prevPage" class="mt-2 btn btn-secondary me-2">
-                Sebelumnya
-              </button>
-              <button id="nextPage" class="mt-2 btn me-2 btn-secondary">
-                Berikutnya
-              </button>
-              <button
-                id="fullscreenToggle"
-                class="mt-2 btn btn-secondary"
-                title="Toggle Fullscreen"
-              >
-                Fullscreen
-              </button>
+            <span class="book-label">Jilid 2</span>
+          </button>
+
+          <button class="book-item" onclick="openBook(3)" aria-label="Buka At-Tartil Jilid 3">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil3/cover.webp" alt="At-Tartil Jilid 3" loading="lazy" />
+              </div>
             </div>
-          </div>
+            <span class="book-label">Jilid 3</span>
+          </button>
+
+          <button class="book-item" onclick="openBook(4)" aria-label="Buka At-Tartil Jilid 4">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil4/cover.webp" alt="At-Tartil Jilid 4" loading="lazy" />
+              </div>
+            </div>
+            <span class="book-label">Jilid 4</span>
+          </button>
+
+          <button class="book-item" onclick="openBook(5)" aria-label="Buka At-Tartil Jilid 5">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil5/cover.webp" alt="At-Tartil Jilid 5" loading="lazy" />
+              </div>
+            </div>
+            <span class="book-label">Jilid 5</span>
+          </button>
+
+          <button class="book-item" onclick="openBook(6)" aria-label="Buka At-Tartil Jilid 6">
+            <div class="book-3d">
+              <div class="book-spine"></div>
+              <div class="book-cover-wrap">
+                <img src="img/tartil6/cover.webp" alt="At-Tartil Jilid 6" loading="lazy" />
+              </div>
+            </div>
+            <span class="book-label">Jilid 6</span>
+          </button>
         </div>
-      </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="selection-footer">
+        <p>© <span id="year"></span> E-Kitab At-Tartil - TPQ AMANAH</p>
+        <p>Created with ❤️ by <a href="https://riskiputraalamzah.my.id" target="_blank" rel="noopener">Riski Putra
+            Alamzah</a></p>
+      </footer>
     </div>
 
-    <div id="floatingIcon" class="floating-icon">
-      <img
-        src="img/feedback.png"
-        alt="Feedback Icon"
-        width="60"
-        height="60"
-        class="img-fluid"
-        loading="lazy"
-      />
-    </div>
+    <!-- Flipbook Reader View -->
+    <div id="flipbookReader" class="view-reader hidden">
+      <!-- Top Toolbar -->
+      <header class="reader-toolbar">
+        <button class="toolbar-btn" onclick="closeBook()" title="Kembali">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-    <!-- Sisanya sama, pastikan semua path gambar lokal di tag img sudah dioptimasi -->
-    <!-- ... (Feedback Drawer, Auth Modal, Footer, etc.) ... -->
-    <footer class="text-center text-light py-3 mt-5">
-      <p class="mb-0">
-        © <span id="dynamicYear"></span> - Created with ❤️ By
-        <a
-          href="https://riskiputraalamzah.my.id"
-          target="_blank"
-          style="color: #ffffff; text-decoration: underline"
-          >Riski Putra Alamzah</a
-        >
-      </p>
-    </footer>
-    <div id="feedbackDrawer" class="feedback-drawer">
-      <div class="drawer-header" data-bs-theme="dark">
-        <h5 class="m-0" id="triggerAuthModal">Kritik & Saran</h5>
-        <button id="closeDrawer" class="btn-close"></button>
-      </div>
-      <div class="drawer-body">
-        <textarea
-          class="form-control"
-          rows="5"
-          placeholder="Tulis kritik atau saran Anda..."
-        ></textarea>
-        <button class="btn btn-success mt-3">Kirim</button>
-      </div>
-    </div>
+        <div class="toolbar-center">
+          <span class="toolbar-title" id="toolbarTitle">At-Tartil Jilid 1</span>
+          <span class="toolbar-page" id="toolbarPage">Halaman 1 / 36</span>
+        </div>
 
-    <div id="authModal" class="modal fade" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog text-dark">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Autentikasi Admin</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form>
-              <input
-                type="password"
-                id="adminKey"
-                class="form-control"
-                placeholder="Masukkan Key Admin"
-              />
-            </form>
-            <div class="mt-3">
-              <p id="unreadFeedbackCount" class="text-danger">
-                Kritik & Saran belum terbaca: 0
-              </p>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" id="authSubmit" class="btn btn-primary">
-              Submit
+        <div class="toolbar-actions">
+          <button class="toolbar-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="Layar Penuh">
+            <svg id="iconExpand" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+            </svg>
+            <svg id="iconCompress" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Reader Area -->
+      <main class="reader-main">
+        <!-- Navigation: Previous -->
+        <button class="nav-arrow nav-prev" onclick="flipPrev()" id="navPrev" title="Sebelumnya">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <!-- Cover View (Centered Single Cover) -->
+        <div id="coverView" class="cover-view">
+          <div class="cover-wrapper">
+            <img id="coverImage" src="" alt="Cover" class="cover-image" />
+            <button class="start-reading-btn" onclick="startReading()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 3l14 9-14 9V3z" />
+              </svg>
+              Mulai Baca
             </button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div
-      id="feedbackAdminModal"
-      class="modal fade"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg bg-white modal-fullscreen">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title text-dark">Daftar Kritik & Saran</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div id="adminFeedbackList" class="list-group">
-              <!-- Feedback items will be dynamically loaded here -->
-            </div>
-          </div>
+        <!-- Flipbook Container (Hidden until reading) -->
+        <div id="flipbookContainer" class="flipbook-wrapper hidden">
+          <div id="flipbook" class="flipbook"></div>
         </div>
-      </div>
+
+        <!-- Navigation: Next -->
+        <button class="nav-arrow nav-next" onclick="flipNext()" id="navNext" title="Berikutnya">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </main>
+
+      <!-- Bottom Bar -->
+      <footer class="reader-footer">
+        <button class="footer-btn" onclick="flipToPage(0)" title="Cover">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+          </svg>
+          <span>Cover</span>
+        </button>
+
+        <div class="page-nav">
+          <label for="pageSelect">Halaman:</label>
+          <select id="pageSelect" onchange="flipToPage(parseInt(this.value))">
+            <option value="0">Cover</option>
+          </select>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav">
+          <button class="footer-btn" onclick="flipPrev()" id="mobilePrev">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            <span>Prev</span>
+          </button>
+          <button class="footer-btn" onclick="flipNext()" id="mobileNext">
+            <span>Next</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </footer>
     </div>
-    <!-- Skrip -->
-    <!-- Muat progressive-image.js dulu jika masih dipakai untuk cover -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/progressive-image.js/dist/progressive-image.js"
-      defer
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      defer
-    ></script>
-    <!-- Glightbox dan PageFlip bisa di-load on-demand jika hanya dipakai di modal atau section tertentu -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/glightbox@3.0.0/dist/js/glightbox.min.js" defer></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js" defer></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script> -->
-    <script src="js/script.js"></script>
-    <script type="module" src="js/firebase.js"></script>
 
-    <!-- script.js juga bisa di defer jika tidak ada critical inline JS -->
+  </div>
 
-    <script>
-      // Hapus atau optimasi animasi bubble jika memberatkan
-      // if (window.innerWidth > 768) {
-      // Contoh: hanya aktifkan di desktop
-      // for (let i = 0; i < 20; i++) {
-      //   // Kurangi jumlah bubble
-      //   const bubble = document.createElement("div");
-      //   bubble.classList.add("bubble");
-      //   const size = Math.random() * 30 + 10; // perkecil ukuran
-      //   bubble.style.width = `${size}px`;
-      //   bubble.style.height = `${size}px`;
-      //   bubble.style.left = `${Math.random() * 100}%`;
-      //   const duration = 8 + Math.random() * 5; // perlama durasi
-      //   bubble.style.animationDuration = `${duration}s`;
-      //   const delay = Math.random() * 7;
-      //   bubble.style.animationDelay = `${delay}s`;
-      //   document.body.appendChild(bubble);
-      // }
-      // }
+  <!-- PageFlip Library -->
+  <script src="js/page-flip.browser.js"></script>
+  <script src="js/script.js"></script>
+</body>
 
-      // Service Worker Registration
-      // if ("serviceWorker" in navigator) {
-      //   window.addEventListener("load", () => {
-      //     // Daftarkan SW setelah halaman utama load
-      //     navigator.serviceWorker
-      //       .register("/service-worker.js")
-      //       .then((registration) => {
-      //         console.log(
-      //           "Service Worker registered with scope:",
-      //           registration.scope
-      //         );
-      //       })
-      //       .catch((error) => {
-      //         console.error("Service Worker registration failed:", error);
-      //       });
-      //   });
-      // }
-    </script>
-  </body>
 </html>

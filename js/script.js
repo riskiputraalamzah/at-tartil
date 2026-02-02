@@ -1,327 +1,426 @@
-// Pastikan import firebase dan fungsi lainnya tetap di atas
+/**
+ * E-Kitab At-Tartil - Flipbook Reader
+ * TPQ AMANAH Sawotratap
+ * 
+ * Fixed: Simple responsive sizing that actually works
+ */
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM fully loaded and parsed");
+// ===== State =====
+let currentJilid = 1;
+let pageFlip = null;
+const MAX_PAGES = 36;
+let showingCover = true;
 
-  const modalElement = document.getElementById("tartilModal");
-  const pageSelector = document.getElementById("pageSelector");
-  const prevPageButton = document.getElementById("prevPage");
-  const nextPageButton = document.getElementById("nextPage");
-  const currentImage = document.getElementById("currentImage");
-  const fullscreenToggle = document.getElementById("fullscreenToggle");
-  const tartilNumSpan = document.getElementById("tartilNum");
+// ===== DOM Elements Cache =====
+let elements = null;
 
-  let currentPage = 0;
-  let currentTartil = 1;
-  let isLoadingImageInModal = false;
-  const MAX_PAGES = 36; // Definisikan jumlah halaman maksimal
+// ===== Initialize =====
+document.addEventListener('DOMContentLoaded', init);
 
-  if (window.ProgressiveImage) {
-    const progressiveImages = new ProgressiveImage();
-    progressiveImages.init();
-  }
-
-  modalElement.addEventListener("show.bs.modal", (event) => {
-    const button = event.relatedTarget;
-    currentTartil = button.closest(".card").getAttribute("data-tartil");
-    if (tartilNumSpan) tartilNumSpan.textContent = currentTartil;
-    currentPage = 0;
-    if (pageSelector) pageSelector.value = currentPage;
-    updateImage();
-    // Tambahkan event listener untuk navigasi keyboard saat modal terbuka
-    document.addEventListener("keydown", handleModalKeyNavigation);
-  });
-
-  modalElement.addEventListener("hidden.bs.modal", () => {
-    isLoadingImageInModal = false;
-    const existingSpinner = currentImage.parentElement.querySelector(
-      ".image-loading-spinner"
-    );
-    if (existingSpinner) existingSpinner.remove();
-    if (currentImage) currentImage.classList.remove("hidden");
-    currentImage.src = "";
-    // Hapus event listener keyboard saat modal ditutup
-    document.removeEventListener("keydown", handleModalKeyNavigation);
-    // Jika keluar dari fullscreen saat modal ditutup
-    if (document.fullscreenElement) {
-      document
-        .exitFullscreen()
-        .catch((err) =>
-          console.error("Error exiting fullscreen on modal close:", err.message)
-        );
-    }
-  });
-
-  if (pageSelector) {
-    pageSelector.innerHTML = "";
-    const coverOption = document.createElement("option");
-    coverOption.value = 0;
-    coverOption.textContent = "Cover";
-    pageSelector.appendChild(coverOption);
-    for (let i = 1; i <= MAX_PAGES; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.textContent = `Halaman ${i}`;
-      pageSelector.appendChild(option);
-    }
-  }
-
-  const updateImage = () => {
-    if (isLoadingImageInModal && currentImage.src !== "") return;
-    isLoadingImageInModal = true;
-
-    if (prevPageButton) prevPageButton.disabled = true;
-    if (nextPageButton) nextPageButton.disabled = true;
-    if (pageSelector) pageSelector.disabled = true;
-
-    currentImage.classList.add("hidden");
-
-    let spinnerDiv = currentImage.parentElement.querySelector(
-      ".image-loading-spinner"
-    );
-    if (spinnerDiv) spinnerDiv.remove();
-
-    spinnerDiv = document.createElement("div");
-    spinnerDiv.className =
-      "d-flex justify-content-center gap-2 image-loading-spinner";
-    spinnerDiv.setAttribute("role", "status");
-    for (let i = 0; i < 3; i++) {
-      const spinner = document.createElement("div");
-      spinner.className = "spinner-grow text-light";
-      spinner.innerHTML = '<span class="visually-hidden">Loading...</span>';
-      spinnerDiv.appendChild(spinner);
-    }
-    currentImage.parentElement.appendChild(spinnerDiv);
-
-    const pagePath = currentPage === 0 ? "cover" : currentPage;
-    const ext = currentPage === 0 ? "webp" : "png";
-    const imageUrl = `img/tartil${currentTartil}/${pagePath}.${ext}`;
-    const tempImg = new Image();
-
-    const loadSuccess = () => {
-      currentImage.src = tempImg.src;
-      currentImage.alt = `Halaman ${
-        currentPage === 0 ? "Cover" : currentPage
-      } dari Tartil ${currentTartil}`;
-      if (spinnerDiv && spinnerDiv.parentNode) spinnerDiv.remove();
-      currentImage.classList.remove("hidden");
-      isLoadingImageInModal = false;
-      if (prevPageButton) prevPageButton.disabled = currentPage === 0;
-      if (nextPageButton) nextPageButton.disabled = currentPage === MAX_PAGES;
-      if (pageSelector) pageSelector.disabled = false;
-    };
-
-    const loadError = () => {
-      console.error(`Failed to load image: ${tempImg.src}`);
-      currentImage.alt = "Gagal memuat gambar";
-      if (spinnerDiv && spinnerDiv.parentNode) spinnerDiv.remove();
-      currentImage.classList.remove("hidden");
-      isLoadingImageInModal = false;
-      if (prevPageButton) prevPageButton.disabled = false; // Atau sesuaikan dengan logika error
-      if (nextPageButton) nextPageButton.disabled = false;
-      if (pageSelector) pageSelector.disabled = false;
-    };
-
-    tempImg.onload = loadSuccess;
-    tempImg.onerror = loadError;
-    setTimeout(() => {
-      tempImg.src = imageUrl;
-    }, 200); // Beri sedikit waktu untuk fade out & spinner muncul
+function init() {
+  elements = {
+    bookSelection: document.getElementById('bookSelection'),
+    flipbookReader: document.getElementById('flipbookReader'),
+    coverView: document.getElementById('coverView'),
+    coverImage: document.getElementById('coverImage'),
+    flipbookContainer: document.getElementById('flipbookContainer'),
+    toolbarTitle: document.getElementById('toolbarTitle'),
+    toolbarPage: document.getElementById('toolbarPage'),
+    pageSelect: document.getElementById('pageSelect'),
+    navPrev: document.getElementById('navPrev'),
+    navNext: document.getElementById('navNext'),
+    mobilePrev: document.getElementById('mobilePrev'),
+    mobileNext: document.getElementById('mobileNext'),
+    fullscreenBtn: document.getElementById('fullscreenBtn'),
+    iconExpand: document.getElementById('iconExpand'),
+    iconCompress: document.getElementById('iconCompress'),
+    year: document.getElementById('year')
   };
 
-  // --- FUNGSI NAVIGASI ---
-  function goToPrevPage() {
-    if (isLoadingImageInModal) return;
-    if (currentPage > 0) {
-      currentPage--;
-      if (pageSelector) pageSelector.value = currentPage;
-      updateImage();
-    }
-  }
-
-  function goToNextPage() {
-    if (isLoadingImageInModal) return;
-    if (currentPage < MAX_PAGES) {
-      currentPage++;
-      if (pageSelector) pageSelector.value = currentPage;
-      updateImage();
-    }
-  }
-  // --- AKHIR FUNGSI NAVIGASI ---
-
-  if (prevPageButton) {
-    prevPageButton.addEventListener("click", goToPrevPage);
-  }
-
-  if (nextPageButton) {
-    nextPageButton.addEventListener("click", goToNextPage);
-  }
-
-  if (pageSelector) {
-    pageSelector.addEventListener("change", (event) => {
-      if (isLoadingImageInModal) return;
-      currentPage = parseInt(event.target.value, 10);
-      updateImage();
-    });
-  }
-
-  // --- LOGIKA FULLSCREEN DAN NAVIGASI FULLSCREEN ---
-  if (fullscreenToggle) {
-    fullscreenToggle.addEventListener("click", () => {
-      if (!document.fullscreenElement) {
-        if (currentImage.requestFullscreen) {
-          currentImage
-            .requestFullscreen()
-            .then(() => {
-              // Anda bisa menambahkan logika khusus saat berhasil masuk fullscreen di sini jika perlu
-            })
-            .catch((err) => console.error(`Fullscreen error: ${err.message}`));
-        } else {
-          console.warn(
-            "Fullscreen API not supported on this image element or browser."
-          );
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document
-            .exitFullscreen()
-            .catch((err) =>
-              console.error(`Exit fullscreen error: ${err.message}`)
-            );
-        }
-      }
-    });
-  }
-
-  // Event listener untuk perubahan status fullscreen (masuk/keluar)
-  document.addEventListener("fullscreenchange", () => {
-    if (document.fullscreenElement === currentImage) {
-      console.log("Entered fullscreen for currentImage.");
-      console.log("Fullscreen element:", document.fullscreenElement);
-      document.fullscreenElement.addEventListener(
-        "mousemove",
-        handleFullscreenMouseMove
-      );
-      // Tambahkan kursor custom atau styling jika perlu saat fullscreen
-      // currentImage.style.cursor = "pointer"; // Contoh sederhana
-    } else {
-      console.log("Exited fullscreen.");
-      currentImage.removeEventListener("mousemove", handleFullscreenMouseMove);
-      currentImage.classList.remove(
-        "fullscreen-nav-left",
-        "fullscreen-nav-right"
-      );
-      currentImage.style.cursor = "";
-    }
-  });
-
-  // Navigasi dengan klik pada gambar saat fullscreen
-  currentImage.addEventListener("click", (event) => {
-    if (document.fullscreenElement === currentImage) {
-      const imageWidth = currentImage.offsetWidth;
-      const clickX = event.offsetX; // Posisi X klik relatif terhadap elemen gambar
-
-      if (clickX < imageWidth / 2) {
-        // Klik di sisi kiri
-        goToPrevPage();
-      } else {
-        // Klik di sisi kanan
-        goToNextPage();
-      }
-    }
-  });
-
-  // Navigasi dengan keyboard (panah kiri/kanan) saat gambar fullscreen ATAU modal aktif
-  // Fungsi ini akan dipanggil oleh dua event listener terpisah
-  function handleGlobalKeyNavigation(event) {
-    // Cek apakah modal At-Tartil sedang aktif DAN gambar sedang tidak loading
-    const isModalActive = modalElement.classList.contains("show");
-
-    if (isLoadingImageInModal) return;
-
-    if (document.fullscreenElement === currentImage) {
-      // Jika sedang fullscreen
-      if (event.key === "ArrowLeft") {
-        goToPrevPage();
-        event.preventDefault(); // Mencegah scroll halaman jika ada
-      } else if (event.key === "ArrowRight") {
-        goToNextPage();
-        event.preventDefault();
-      }
-      // Tombol Escape sudah ditangani browser untuk keluar fullscreen
-    } else if (isModalActive) {
-      // Jika modal aktif tapi tidak fullscreen
-      if (event.key === "ArrowLeft") {
-        goToPrevPage();
-        event.preventDefault();
-      } else if (event.key === "ArrowRight") {
-        goToNextPage();
-        event.preventDefault();
-      }
-    }
-  }
-  // Event listener global untuk keyboard
-  document.addEventListener("keydown", handleGlobalKeyNavigation);
-
-  // Fungsi terpisah untuk navigasi keyboard khusus saat modal saja (jika ingin perilaku berbeda)
-  // Ini dipanggil saat modal 'show' dan dihapus saat 'hidden'
-  // Anda bisa memilih untuk menggunakan handleGlobalKeyNavigation atau yang ini + modifikasi
-  // Untuk saat ini, handleGlobalKeyNavigation sudah mencakup kedua kasus.
-  function handleModalKeyNavigation(event) {
-    if (isLoadingImageInModal || document.fullscreenElement === currentImage)
-      return; // Jangan jalankan jika fullscreen (sudah ditangani)
-
-    if (event.key === "ArrowLeft") {
-      goToPrevPage();
-      event.preventDefault();
-    } else if (event.key === "ArrowRight") {
-      goToNextPage();
-      event.preventDefault();
-    }
-  }
-  // ... di dalam 'fullscreenchange' atau event 'mousemove' pada currentImage saat fullscreen
-  // if (document.fullscreenElement === currentImage) {
-  //   currentImage.addEventListener("mousemove", handleFullscreenMouseMove);
-  // } else {
-  //   currentImage.removeEventListener("mousemove", handleFullscreenMouseMove);
-  //   currentImage.classList.remove(
-  //     "fullscreen-nav-left",
-  //     "fullscreen-nav-right"
-  //   );
-  //   currentImage.style.cursor = "";
-  // }
-
-  function handleFullscreenMouseMove(event) {
-    if (document.fullscreenElement !== currentImage) return;
-    console.log("Mouse moved in fullscreen");
-    const imageWidth = currentImage.offsetWidth;
-    const clickX = event.offsetX;
-    currentImage.classList.remove(
-      "fullscreen-nav-left",
-      "fullscreen-nav-right"
-    ); // Reset
-    if (clickX < imageWidth / 3) {
-      // Zona kiri
-      // currentImage.style.cursor = 'w-resize'; // Atau
-      currentImage.classList.add("fullscreen-nav-left");
-    } else if (clickX > (imageWidth * 2) / 3) {
-      // Zona kanan
-      // currentImage.style.cursor = 'e-resize'; // Atau
-      currentImage.classList.add("fullscreen-nav-right");
-    } else {
-      // currentImage.style.cursor = 'default';
-    }
-  }
-
-  // --- AKHIR LOGIKA FULLSCREEN ---
-
-  const dynamicYearEl = document.getElementById("dynamicYear");
-  if (dynamicYearEl) {
+  if (elements.year) {
     const startYear = 2024;
     const currentYear = new Date().getFullYear();
-    dynamicYearEl.textContent =
-      startYear === currentYear
-        ? `${startYear}`
-        : `${startYear} - ${currentYear}`;
+    elements.year.textContent = startYear === currentYear ? startYear : `${startYear} - ${currentYear}`;
   }
-}); // Akhir DOMContentLoaded
+
+  populatePageSelector();
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+}
+
+// ===== Page Selector =====
+function populatePageSelector() {
+  const select = elements.pageSelect;
+  if (!select) return;
+
+  select.innerHTML = '<option value="0">Cover</option>';
+  for (let i = 1; i <= MAX_PAGES; i++) {
+    const option = document.createElement('option');
+    option.value = i.toString();
+    option.textContent = `Hal ${i}`;
+    select.appendChild(option);
+  }
+}
+
+// ===== Get Page URLs =====
+function getPageUrls(jilid) {
+  const urls = [];
+  for (let i = 1; i <= MAX_PAGES; i++) {
+    urls.push(`img/tartil${jilid}/${i}.png`);
+  }
+  return urls;
+}
+
+// ===== Calculate Size - SIMPLE VIEWPORT BASED =====
+function getFlipbookSize() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const isMobile = vw < 768;
+
+  // Reserve space for UI elements
+  const toolbarHeight = 70;
+  const footerHeight = 80;
+  const padding = 30;
+  const availHeight = vh - toolbarHeight - footerHeight - padding;
+
+  let pageWidth, pageHeight;
+
+  if (isMobile) {
+    // Mobile: single page, fill width
+    pageWidth = Math.min(vw * 0.85, 400);
+    pageHeight = pageWidth * 1.4; // taller than wide
+
+    // But don't exceed height
+    if (pageHeight > availHeight * 0.9) {
+      pageHeight = availHeight * 0.9;
+      pageWidth = pageHeight * 0.7;
+    }
+  } else {
+    // Desktop: double spread
+    pageHeight = Math.min(availHeight * 0.88, 550);
+    pageWidth = pageHeight * 0.7;
+
+    // Check double width fits
+    const totalWidth = (pageWidth * 2) + 20;
+    if (totalWidth > vw * 0.75) {
+      pageWidth = ((vw * 0.75) - 20) / 2;
+      pageHeight = pageWidth / 0.7;
+    }
+  }
+
+  console.log('Flipbook size:', { vw, vh, pageWidth: Math.floor(pageWidth), pageHeight: Math.floor(pageHeight), isMobile });
+
+  return {
+    width: Math.floor(pageWidth),
+    height: Math.floor(pageHeight)
+  };
+}
+
+// ===== Open Book =====
+function openBook(jilid) {
+  currentJilid = jilid;
+  showingCover = true;
+
+  if (elements.toolbarTitle) {
+    elements.toolbarTitle.textContent = `At-Tartil Jilid ${jilid}`;
+  }
+
+  elements.bookSelection.classList.add('hidden');
+  elements.flipbookReader.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  showCover(jilid);
+}
+
+// ===== Show Cover =====
+function showCover(jilid) {
+  showingCover = true;
+
+  if (elements.coverImage) {
+    elements.coverImage.src = `img/tartil${jilid}/cover.webp`;
+    elements.coverImage.alt = `Cover At-Tartil Jilid ${jilid}`;
+  }
+
+  elements.coverView.classList.remove('hidden');
+  elements.flipbookContainer.classList.add('hidden');
+
+  updatePageInfo(0);
+  updateNavButtonsForCover();
+}
+
+// ===== Start Reading =====
+function startReading() {
+  showingCover = false;
+
+  elements.coverView.classList.add('hidden');
+  elements.flipbookContainer.classList.remove('hidden');
+
+  destroyFlipbook();
+
+  setTimeout(() => {
+    createFlipbook(currentJilid);
+  }, 50);
+}
+
+// ===== Destroy Flipbook =====
+function destroyFlipbook() {
+  if (pageFlip) {
+    try { pageFlip.destroy(); } catch (e) { }
+    pageFlip = null;
+  }
+
+  const container = elements.flipbookContainer;
+  if (container) {
+    container.innerHTML = '<div id="flipbook" class="flipbook"></div>';
+  }
+}
+
+// ===== Create Flipbook =====
+function createFlipbook(jilid) {
+  const flipbookEl = document.getElementById('flipbook');
+  if (!flipbookEl) return;
+
+  const size = getFlipbookSize();
+  const pageUrls = getPageUrls(jilid);
+
+  // Create pages
+  pageUrls.forEach((url, index) => {
+    const page = document.createElement('div');
+    page.className = 'page-content';
+    page.dataset.density = 'soft';
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = `Halaman ${index + 1}`;
+    img.loading = index < 4 ? 'eager' : 'lazy';
+    img.draggable = false;
+
+    page.appendChild(img);
+    flipbookEl.appendChild(page);
+  });
+
+  try {
+    pageFlip = new St.PageFlip(flipbookEl, {
+      width: size.width,
+      height: size.height,
+      size: 'fixed',
+      minWidth: size.width,
+      maxWidth: size.width,
+      minHeight: size.height,
+      maxHeight: size.height,
+      showCover: false,
+      mobileScrollSupport: false,
+      maxShadowOpacity: 0.4,
+      drawShadow: true,
+      flippingTime: 500,
+      usePortrait: window.innerWidth < 768,
+      startZIndex: 0,
+      autoSize: false,
+      clickEventForward: true,
+      useMouseEvents: true,
+      swipeDistance: 30,
+      showPageCorners: true,
+      disableFlipByClick: false
+    });
+
+    const pages = flipbookEl.querySelectorAll('.page-content');
+    pageFlip.loadFromHTML(pages);
+
+    pageFlip.on('flip', (e) => {
+      updatePageInfo(e.data + 1);
+    });
+    pageFlip.on('changeState', () => updateNavButtons());
+
+    updatePageInfo(1);
+    updateNavButtons();
+
+  } catch (error) {
+    console.error('Flipbook error:', error);
+  }
+}
+
+// ===== Update Page Info =====
+function updatePageInfo(pageIndex) {
+  const display = pageIndex === 0 ? 'Cover' : pageIndex;
+
+  if (elements.toolbarPage) {
+    elements.toolbarPage.textContent = `${display} / ${MAX_PAGES}`;
+  }
+
+  if (elements.pageSelect) {
+    elements.pageSelect.value = Math.min(pageIndex, MAX_PAGES).toString();
+  }
+}
+
+// ===== Update Nav Buttons - Cover =====
+function updateNavButtonsForCover() {
+  if (elements.navPrev) elements.navPrev.disabled = true;
+  if (elements.navNext) elements.navNext.disabled = false;
+  if (elements.mobilePrev) elements.mobilePrev.disabled = true;
+  if (elements.mobileNext) elements.mobileNext.disabled = false;
+}
+
+// ===== Update Nav Buttons - Flipbook =====
+function updateNavButtons() {
+  if (!pageFlip) return;
+
+  try {
+    const current = pageFlip.getCurrentPageIndex();
+    const total = pageFlip.getPageCount();
+
+    const isLast = current >= total - (window.innerWidth >= 768 ? 2 : 1);
+
+    if (elements.navPrev) elements.navPrev.disabled = false;
+    if (elements.navNext) elements.navNext.disabled = isLast;
+    if (elements.mobilePrev) elements.mobilePrev.disabled = false;
+    if (elements.mobileNext) elements.mobileNext.disabled = isLast;
+  } catch (e) { }
+}
+
+// ===== Navigation =====
+function flipPrev() {
+  if (showingCover) return;
+
+  if (pageFlip) {
+    const current = pageFlip.getCurrentPageIndex();
+    if (current <= 0) {
+      showCover(currentJilid);
+      destroyFlipbook();
+    } else {
+      try { pageFlip.flipPrev(); } catch (e) { }
+    }
+  }
+}
+
+function flipNext() {
+  if (showingCover) {
+    startReading();
+    return;
+  }
+
+  if (pageFlip) {
+    try { pageFlip.flipNext(); } catch (e) { }
+  }
+}
+
+function flipToPage(pageIndex) {
+  if (pageIndex === 0) {
+    showCover(currentJilid);
+    destroyFlipbook();
+    return;
+  }
+
+  if (showingCover) {
+    startReading();
+    setTimeout(() => {
+      if (pageFlip) {
+        try { pageFlip.flip(pageIndex - 1); } catch (e) { }
+      }
+    }, 300);
+    return;
+  }
+
+  if (pageFlip) {
+    try { pageFlip.flip(pageIndex - 1); } catch (e) { }
+  }
+}
+
+// ===== Close Book =====
+function closeBook() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => { });
+  }
+
+  destroyFlipbook();
+  showingCover = true;
+
+  elements.flipbookReader.classList.add('hidden');
+  elements.bookSelection.classList.remove('hidden');
+  document.body.style.overflow = '';
+}
+
+// ===== Keyboard Navigation =====
+function handleKeydown(e) {
+  if (!elements.flipbookReader || elements.flipbookReader.classList.contains('hidden')) return;
+
+  switch (e.key) {
+    case 'ArrowLeft':
+      e.preventDefault();
+      flipPrev();
+      break;
+    case 'ArrowRight':
+      e.preventDefault();
+      flipNext();
+      break;
+    case 'Escape':
+      if (!document.fullscreenElement) closeBook();
+      break;
+    case 'Home':
+      e.preventDefault();
+      flipToPage(0);
+      break;
+    case 'End':
+      e.preventDefault();
+      flipToPage(MAX_PAGES);
+      break;
+    case 'f':
+    case 'F':
+      if (!e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      break;
+  }
+}
+
+// ===== Fullscreen =====
+function toggleFullscreen() {
+  const reader = elements.flipbookReader;
+  if (!reader) return;
+
+  if (!document.fullscreenElement) {
+    const req = reader.requestFullscreen || reader.webkitRequestFullscreen;
+    if (req) req.call(reader).catch(() => { });
+  } else {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) exit.call(document);
+  }
+}
+
+function handleFullscreenChange() {
+  const isFS = !!document.fullscreenElement || !!document.webkitFullscreenElement;
+
+  if (elements.iconExpand) elements.iconExpand.classList.toggle('hidden', isFS);
+  if (elements.iconCompress) elements.iconCompress.classList.toggle('hidden', !isFS);
+
+  if (pageFlip && !showingCover) {
+    setTimeout(() => {
+      try {
+        const size = getFlipbookSize();
+        pageFlip.updateFromSettings({
+          width: size.width,
+          height: size.height
+        });
+      } catch (e) { }
+    }, 300);
+  }
+}
+
+// ===== Window Resize =====
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (pageFlip && !showingCover && !elements.flipbookReader.classList.contains('hidden')) {
+      try {
+        const size = getFlipbookSize();
+        pageFlip.updateFromSettings({
+          width: size.width,
+          height: size.height,
+          usePortrait: window.innerWidth < 768
+        });
+      } catch (e) { }
+    }
+  }, 200);
+});
