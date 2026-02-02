@@ -99,6 +99,44 @@ a {
   display: none !important;
 }
 
+/* ===== Skeleton Loading ===== */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+      #f0f0f0 0%,
+      #e8e8e8 20%,
+      #f0f0f0 40%,
+      #f0f0f0 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s linear infinite;
+  border-radius: inherit;
+}
+
+.skeleton-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
 /* ===== Book Selection View ===== */
 .view-selection {
   min-height: 100vh;
@@ -350,6 +388,27 @@ a {
     -2px 0 5px rgba(0, 0, 0, 0.05);
 }
 
+/* Skeleton for book cover */
+.book-cover-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      #f0f0f0 0%,
+      #e0e0e0 50%,
+      #f0f0f0 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.book-cover-wrap.loaded::before {
+  opacity: 0;
+}
+
 .book-item:hover .book-cover-wrap {
   transform: rotateY(-18deg) scale(1.03);
   box-shadow:
@@ -361,14 +420,19 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform var(--transition-slow), opacity 0.3s ease;
+  opacity: 0;
+}
+
+.book-cover-wrap.loaded img {
+  opacity: 1;
 }
 
 .book-spine {
   position: absolute;
   left: 0;
   top: 0;
-  width: 12px;
+  width: 0px;
   height: 100%;
   background: linear-gradient(to right, var(--green-900), var(--green-700), var(--green-800));
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
@@ -413,6 +477,39 @@ a {
 .selection-footer a:hover {
   color: var(--green-700);
   text-decoration: underline;
+}
+
+/* ===== Reader View Animations ===== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.view-reader {
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-reader.closing {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 /* ===== Flipbook Reader View ===== */
@@ -460,18 +557,39 @@ a {
   background: var(--green-50);
   border: 2px solid var(--green-200);
   border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ripple effect on click */
+.toolbar-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, var(--green-300) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.toolbar-btn:active::before {
+  transform: scale(2.5);
+  opacity: 0.4;
+  transition: transform 0s, opacity 0s;
 }
 
 .toolbar-btn:hover {
   background: var(--green-100);
   border-color: var(--green-300);
   color: var(--green-800);
-  transform: scale(1.08);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
 }
 
 .toolbar-btn:active {
-  transform: scale(0.95);
+  transform: translateY(0) scale(0.92);
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.1);
 }
 
 .toolbar-center {
@@ -611,6 +729,37 @@ a {
     0 10px 20px rgba(0, 0, 0, 0.1),
     0 30px 60px rgba(20, 83, 45, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  background: #f5f5f5;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.cover-image.loaded {
+  opacity: 1;
+}
+
+/* Cover image skeleton */
+.cover-wrapper::before {
+  content: '';
+  position: absolute;
+  width: min(85vw, 350px);
+  height: calc(min(85vw, 350px) * 1.4);
+  max-height: calc(100vh - 280px);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg,
+      #f0f0f0 0%,
+      #e0e0e0 50%,
+      #f0f0f0 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.cover-wrapper.loaded::before {
+  opacity: 0;
 }
 
 .start-reading-btn {
@@ -667,7 +816,7 @@ a {
 
 .flipbook {
   border-radius: var(--radius-xl);
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* PageFlip Library Styling */
@@ -693,6 +842,28 @@ a {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
+}
+
+/* Skeleton for flipbook pages */
+.flipbook .page-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      #f8f8f8 0%,
+      #e8e8e8 50%,
+      #f8f8f8 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.flipbook .page-content.loaded::before {
+  opacity: 0;
 }
 
 .flipbook .page-content img {
@@ -700,6 +871,14 @@ a {
   height: 100%;
   object-fit: contain;
   background: var(--white);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.flipbook .page-content.loaded img {
+  opacity: 1;
 }
 
 /* Reader Footer */

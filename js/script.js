@@ -44,6 +44,7 @@ function init() {
   }
 
   populatePageSelector();
+  setupImageLoaders(); // Add skeleton loading handlers
   document.addEventListener('keydown', handleKeydown);
   document.addEventListener('fullscreenchange', handleFullscreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -61,6 +62,27 @@ function populatePageSelector() {
     option.textContent = `Hal ${i}`;
     select.appendChild(option);
   }
+}
+
+// ===== Setup Image Loaders =====
+function setupImageLoaders() {
+  // Setup skeleton loaders for all book cover images
+  const bookCovers = document.querySelectorAll('.book-cover-wrap');
+  bookCovers.forEach(cover => {
+    const img = cover.querySelector('img');
+    if (img) {
+      if (img.complete) {
+        cover.classList.add('loaded');
+      } else {
+        img.addEventListener('load', () => {
+          cover.classList.add('loaded');
+        });
+        img.addEventListener('error', () => {
+          cover.classList.add('loaded'); // Still remove skeleton on error
+        });
+      }
+    }
+  });
 }
 
 // ===== Get Page URLs =====
@@ -137,9 +159,32 @@ function openBook(jilid) {
 function showCover(jilid) {
   showingCover = true;
 
+  const coverWrapper = document.querySelector('.cover-wrapper');
+  if (coverWrapper) {
+    coverWrapper.classList.remove('loaded');
+  }
+
   if (elements.coverImage) {
+    elements.coverImage.classList.remove('loaded');
     elements.coverImage.src = `img/tartil${jilid}/cover.webp`;
     elements.coverImage.alt = `Cover At-Tartil Jilid ${jilid}`;
+
+    // Add load handlers
+    if (elements.coverImage.complete) {
+      elements.coverImage.classList.add('loaded');
+      if (coverWrapper) coverWrapper.classList.add('loaded');
+    } else {
+      elements.coverImage.addEventListener('load', function handleLoad() {
+        elements.coverImage.classList.add('loaded');
+        if (coverWrapper) coverWrapper.classList.add('loaded');
+        elements.coverImage.removeEventListener('load', handleLoad);
+      });
+      elements.coverImage.addEventListener('error', function handleError() {
+        elements.coverImage.classList.add('loaded');
+        if (coverWrapper) coverWrapper.classList.add('loaded');
+        elements.coverImage.removeEventListener('error', handleError);
+      });
+    }
   }
 
   elements.coverView.classList.remove('hidden');
@@ -195,6 +240,14 @@ function createFlipbook(jilid) {
     img.alt = `Halaman ${index + 1}`;
     img.loading = index < 4 ? 'eager' : 'lazy';
     img.draggable = false;
+
+    // Add loading handlers
+    img.addEventListener('load', () => {
+      page.classList.add('loaded');
+    });
+    img.addEventListener('error', () => {
+      page.classList.add('loaded');
+    });
 
     page.appendChild(img);
     flipbookEl.appendChild(page);
@@ -332,12 +385,19 @@ function closeBook() {
     document.exitFullscreen().catch(() => { });
   }
 
-  destroyFlipbook();
-  showingCover = true;
+  // Add closing animation
+  elements.flipbookReader.classList.add('closing');
 
-  elements.flipbookReader.classList.add('hidden');
-  elements.bookSelection.classList.remove('hidden');
-  document.body.style.overflow = '';
+  // Wait for animation to complete before hiding
+  setTimeout(() => {
+    destroyFlipbook();
+    showingCover = true;
+
+    elements.flipbookReader.classList.add('hidden');
+    elements.flipbookReader.classList.remove('closing');
+    elements.bookSelection.classList.remove('hidden');
+    document.body.style.overflow = '';
+  }, 300); // Match animation duration
 }
 
 // ===== Keyboard Navigation =====
