@@ -1,16 +1,16 @@
 // service-worker.js
 
-const CACHE_NAME = "at-tartil-cache-v4"; // Naikkan versi!
+const CACHE_NAME = "at-tartil-cache-v5"; // Updated for WebP version!
 const CORE_APP_SHELL_URLS = [
   "/",
   "/index.html",
   "/manifest.json",
   "/css/style.css",
   "/js/script.js",
-  "/img/logo.png",
-  "/img/bg5.png",
-  "/img/feedback.png",
-  "/img/offline-placeholder.png",
+  "/img/logo.webp",
+  "/img/bg5.webp",
+  "/img/feedback.webp",
+  "/img/offline-placeholder.webp",
 ];
 
 // --- Konfigurasi untuk Pre-caching ---
@@ -20,9 +20,9 @@ const MAX_PAGES_PER_TARTIL = 36;
 function generatePrecacheImageUrls() {
   const imageUrls = [];
   TARTIL_TO_PRECACHE.forEach((tartilNum) => {
-    imageUrls.push(`/img/tartil${tartilNum}/cover.png`);
+    imageUrls.push(`/img/tartil${tartilNum}/cover.webp`);
     for (let j = 1; j <= MAX_PAGES_PER_TARTIL; j++) {
-      imageUrls.push(`/img/tartil${tartilNum}/${j}.png`);
+      imageUrls.push(`/img/tartil${tartilNum}/${j}.webp`);
     }
   });
   return imageUrls;
@@ -46,8 +46,7 @@ self.addEventListener("install", (event) => {
       .open(CACHE_NAME)
       .then((cache) => {
         console.log(
-          `[Service Worker] Pre-caching ${
-            URLS_TO_PRECACHE.length
+          `[Service Worker] Pre-caching ${URLS_TO_PRECACHE.length
           } files: App Shell and Tartil Jilid ${TARTIL_TO_PRECACHE.join(", ")}`
         );
         return cache.addAll(URLS_TO_PRECACHE);

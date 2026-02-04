@@ -55,12 +55,27 @@ function populatePageSelector() {
   const select = elements.pageSelect;
   if (!select) return;
 
+  const isMobile = window.innerWidth < 768;
+
   select.innerHTML = '<option value="0">Cover</option>';
-  for (let i = 1; i <= MAX_PAGES; i++) {
-    const option = document.createElement('option');
-    option.value = i.toString();
-    option.textContent = `Hal ${i}`;
-    select.appendChild(option);
+
+  if (isMobile) {
+    // Mobile: single page options
+    for (let i = 1; i <= MAX_PAGES; i++) {
+      const option = document.createElement('option');
+      option.value = i.toString();
+      option.textContent = `Hal ${i}`;
+      select.appendChild(option);
+    }
+  } else {
+    // Desktop: page spread options (1-2, 3-4, 5-6, etc.)
+    for (let i = 1; i <= MAX_PAGES; i += 2) {
+      const option = document.createElement('option');
+      option.value = i.toString();
+      const endPage = Math.min(i + 1, MAX_PAGES);
+      option.textContent = i === endPage ? `Hal ${i}` : `Hal ${i}-${endPage}`;
+      select.appendChild(option);
+    }
   }
 }
 
@@ -89,7 +104,7 @@ function setupImageLoaders() {
 function getPageUrls(jilid) {
   const urls = [];
   for (let i = 1; i <= MAX_PAGES; i++) {
-    urls.push(`img/tartil${jilid}/${i}.png`);
+    urls.push(`img/tartil${jilid}/${i}.webp`);
   }
   return urls;
 }
@@ -295,14 +310,43 @@ function createFlipbook(jilid) {
 
 // ===== Update Page Info =====
 function updatePageInfo(pageIndex) {
-  const display = pageIndex === 0 ? 'Cover' : pageIndex;
+  const isMobile = window.innerWidth < 768;
+  let display;
+
+  if (pageIndex === 0) {
+    display = 'Cover';
+  } else if (isMobile) {
+    // Mobile: show single page
+    display = pageIndex;
+  } else {
+    // Desktop: show page spread (e.g., 35-36)
+    const leftPage = pageIndex;
+    const rightPage = Math.min(pageIndex + 1, MAX_PAGES);
+    display = leftPage === rightPage ? leftPage : `${leftPage}-${rightPage}`;
+  }
 
   if (elements.toolbarPage) {
     elements.toolbarPage.textContent = `${display} / ${MAX_PAGES}`;
   }
 
   if (elements.pageSelect) {
-    elements.pageSelect.value = Math.min(pageIndex, MAX_PAGES).toString();
+    // Find closest matching option value
+    const targetValue = pageIndex === 0 ? '0' : pageIndex.toString();
+    const options = Array.from(elements.pageSelect.options);
+
+    // Try exact match first
+    let found = options.find(opt => opt.value === targetValue);
+
+    // If not found (desktop mode), find the spread that contains this page
+    if (!found && !isMobile) {
+      // For odd pages, use as-is; for even pages, use previous odd
+      const spreadStart = pageIndex % 2 === 1 ? pageIndex : pageIndex - 1;
+      found = options.find(opt => opt.value === spreadStart.toString());
+    }
+
+    if (found) {
+      elements.pageSelect.value = found.value;
+    }
   }
 }
 
@@ -469,17 +513,31 @@ function handleFullscreenChange() {
 
 // ===== Window Resize =====
 let resizeTimer;
+let lastIsMobile = window.innerWidth < 768;
+
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
+    const currentIsMobile = window.innerWidth < 768;
+
+    // Rebuild page selector if mode changed (mobile <-> desktop)
+    if (currentIsMobile !== lastIsMobile) {
+      populatePageSelector();
+      lastIsMobile = currentIsMobile;
+    }
+
     if (pageFlip && !showingCover && !elements.flipbookReader.classList.contains('hidden')) {
       try {
         const size = getFlipbookSize();
         pageFlip.updateFromSettings({
           width: size.width,
           height: size.height,
-          usePortrait: window.innerWidth < 768
+          usePortrait: currentIsMobile
         });
+
+        // Update page info display for new mode
+        const currentPage = pageFlip.getCurrentPageIndex() + 1;
+        updatePageInfo(currentPage);
       } catch (e) { }
     }
   }, 200);
